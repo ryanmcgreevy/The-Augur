@@ -7,7 +7,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 
-os.environ["OPENAI_API_KEY"] = getpass.getpass()
+#Uncomment if you want to pass the API key every time. You can also set it directly here.
+#For now, we are using the environment variable set by our bash profile
+#os.environ["OPENAI_API_KEY"] = getpass.getpass()
 
 llm = ChatOpenAI(model="gpt-3.5-turbo-0125")
 embeddings=OpenAIEmbeddings()
@@ -30,5 +32,5 @@ retrieval_chain = create_retrieval_chain(retriever, document_chain)
 print("invoking llm...")
 
 
-response = retrieval_chain.invoke({"input": "What are the most useful sets to use for Sanity's Edge? Answer in detail."})
+response = retrieval_chain.invoke({"input": "What is the raffle policy? Answer in detail."})
 print(response["answer"])
