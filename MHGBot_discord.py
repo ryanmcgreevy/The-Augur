@@ -17,7 +17,7 @@ mhgbot = MHGBot()
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
 
-@bot.command(name='mhg')
+@bot.command(name='mhg', help="Answers questions about Maxwell House Guilds")
 async def nine_nine(ctx):
     user_input = ctx.message.content[4:]
     response = mhgbot.invoke_llm(user_input)

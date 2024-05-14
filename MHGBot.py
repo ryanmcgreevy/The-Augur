@@ -29,7 +29,7 @@ class MHGBot:
         vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
         retriever = vectorstore.as_retriever(search_type="similarity")
 
-        prompt = ChatPromptTemplate.from_template("""Answer the following question based only on the provided context:
+        prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly helper who is a fellow member of the guild. Answer with as much specific detail as possible. Answer the following question based only on the provided context:
 
         <context>
         {context}
