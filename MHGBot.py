@@ -7,38 +7,39 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 
+class MHGBot:
+    
+    def __init__(self) -> None:
+        
+        #for offline llm
+        #from langchain_community.llms import Ollama
+        #from langchain_community.embeddings import OllamaEmbeddings
+        #for offline llm
+        #llm = Ollama(model="llama3")
+        #embeddings = OllamaEmbeddings()
 
-#for offline llm
-#from langchain_community.llms import Ollama
-#from langchain_community.embeddings import OllamaEmbeddings
-#for offline llm
-#llm = Ollama(model="llama3")
-#embeddings = OllamaEmbeddings()
+        #Uncomment if you want to pass the API key every time. You can also set it directly here.
+        #For now, we are using the environment variable set by our bash profile
+        #os.environ["OPENAI_API_KEY"] = getpass.getpass()
 
-#Uncomment if you want to pass the API key every time. You can also set it directly here.
-#For now, we are using the environment variable set by our bash profile
-#os.environ["OPENAI_API_KEY"] = getpass.getpass()
-
-llm = ChatOpenAI(model="gpt-3.5-turbo-0125")
-embeddings=OpenAIEmbeddings()
-
-
-vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
-retriever = vectorstore.as_retriever(search_type="similarity")
-
-prompt = ChatPromptTemplate.from_template("""Answer the following question based only on the provided context:
-
-<context>
-{context}
-</context>
-
-Question: {input}""")
-
-document_chain = create_stuff_documents_chain(llm, prompt)
-retrieval_chain = create_retrieval_chain(retriever, document_chain)
-
-print("invoking llm...")
+        llm = ChatOpenAI(model="gpt-3.5-turbo-0125")
+        embeddings=OpenAIEmbeddings()
 
 
-response = retrieval_chain.invoke({"input": "What is the raffle policy? Answer in detail."})
-print(response["answer"])
+        vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+        retriever = vectorstore.as_retriever(search_type="similarity")
+
+        prompt = ChatPromptTemplate.from_template("""Answer the following question based only on the provided context:
+
+        <context>
+        {context}
+        </context>
+
+        Question: {input}""")
+
+        document_chain = create_stuff_documents_chain(llm, prompt)
+        self.retrieval_chain = create_retrieval_chain(retriever, document_chain)
+
+    def invoke_llm(self, user_input):
+        response = self.retrieval_chain.invoke({"input": user_input})
+        return response["answer"]
