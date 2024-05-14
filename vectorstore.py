@@ -7,6 +7,10 @@ from langchain_community.document_loaders import WebBaseLoader
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+#from langchain_community.embeddings import OllamaEmbeddings
+#for offline llm
+#embeddings = OllamaEmbeddings()
+
 #Uncomment if you want to pass the API key every time. You can also set it directly here.
 #For now, we are using the environment variable set by our bash profile
 #os.environ["OPENAI_API_KEY"] = getpass.getpass()

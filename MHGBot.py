@@ -7,6 +7,14 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 
+
+#for offline llm
+#from langchain_community.llms import Ollama
+#from langchain_community.embeddings import OllamaEmbeddings
+#for offline llm
+#llm = Ollama(model="llama3")
+#embeddings = OllamaEmbeddings()
+
 #Uncomment if you want to pass the API key every time. You can also set it directly here.
 #For now, we are using the environment variable set by our bash profile
 #os.environ["OPENAI_API_KEY"] = getpass.getpass()
