@@ -45,14 +45,14 @@ async def hello(interaction: discord.Interaction):
 
 mhgbot = MHGBot()
 
-##NOTE: not working because of 'self' in invoke_llm
 @client.tree.command(name="chat", description="Answers questions about Maxwell House Guilds.")
 @app_commands.describe(message="The question or command to send the chatbot")
 async def chat(interaction: discord.Interaction, message: str):
     print("invoking llm...")
     await interaction.response.defer()
     response = mhgbot.invoke_llm(message)
-    #print(response)
+    #invoking the llm takes too long at this point (beyond the 3 second slash command window)
+    #need to defer and use followup instead.
     #await interaction.response.send_message(response)
     await interaction.followup.send(response)
 
