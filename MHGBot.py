@@ -9,6 +9,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.document_loaders import WebBaseLoader
+from langchain_community.document_loaders import FireCrawlLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 class MHGBot:
@@ -34,7 +35,7 @@ class MHGBot:
         self.vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=self.embeddings)
         self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0})
        
-        self.prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly helper who is a fellow member of the guild. Answer with as much specific detail as possible. Answer the following question based only on the provided context:
+        self.prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly helper who is a fellow member of the guild. Answer with as much specific detail as possible, but only if you are confident in the answer. Answer the following question based only on the provided context:
 
         <context>
         {context}
@@ -52,9 +53,18 @@ class MHGBot:
                             "https://sites.google.com/view/mh-guilds/guides/healer-stuff",
                             "https://sites.google.com/view/mh-guilds/guides/tank-stuff",
                             "https://sites.google.com/view/mh-guilds/guides/parsing-dps",
-                            "https://sites.google.com/view/mh-guilds/raffle"])
+                            "https://sites.google.com/view/mh-guilds/raffle",
+                            "https://thetankclub.com/claw-of-yolnahkriin/",
+                            "https://hacktheminotaur.com/eso-guides/scribing/"])
+
+
         docs = loader.load()
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        doc_len = 0
+        for doc in docs: doc_len += len(doc.page_content)
+        chunk_size = doc_len/len(docs)
+        chunk_overlap = chunk_size/5
+
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         splits = text_splitter.split_documents(docs)
         self.vectorstore = Chroma.from_documents(documents=splits, embedding=self.embeddings, persist_directory="./chroma_db")
         self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0})
