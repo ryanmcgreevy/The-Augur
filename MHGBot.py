@@ -39,7 +39,7 @@ class MHGBot:
 
         document_chain = create_stuff_documents_chain(llm, prompt)
         self.retrieval_chain = create_retrieval_chain(retriever, document_chain)
-
+    
     def invoke_llm(self, user_input):
         response = self.retrieval_chain.invoke({"input": user_input})
         return response["answer"]
