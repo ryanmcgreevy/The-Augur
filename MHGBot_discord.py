@@ -4,11 +4,10 @@ import os
 from dotenv import load_dotenv
 from discord.ext import commands
 from discord import app_commands
+from io import BytesIO
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-
-
 
 #bot implementation
 intents = discord.Intents.all()
@@ -28,10 +27,22 @@ async def sync(ctx):
 
 @bot.event
 async def on_ready():
-   #guild = discord.Object(id=420714725505105921)
-   #bot.tree.copy_global_to(guild=guild)
-   #await bot.tree.sync(guild=discord.Object(id=420714725505105921))
    print(f'{bot.user.name} has connected to Discord!')
+
+@bot.tree.command(name="help", description="Described what the MHGBot is and how to use it.")  
+async def help(interaction: discord.Interaction):
+    help_text = "The MHGBot is an AI powered chatbot designed to answer user questions about " \
+         "the Maxwell House Guilds and The Elder Scrolls Online. To use the bot, type \chat in a " \
+         "text channel and write your message to the bot. After a few seconds the bot will " \
+         "respond to your question or statement."
+    await interaction.response.send_message(help_text)
+
+#This function returns a generator, using a generator comprehension. 
+#The generator returns the string sliced, from 0 + a multiple of the length of the chunks, to the length of the chunks + a multiple of the length of the chunks.
+#You can iterate over the generator like a list, tuple or string - for i in chunkstring(s,n): , or convert it into a list (for instance) with list(generator). 
+#Generators are more memory efficient than lists because they generator their elements as they are needed, not all at once, however they lack certain features like indexing.
+def chunkstring(string, length):
+    return (string[0+i:length+i] for i in range(0, len(string), length))
 
 @bot.tree.command(name="chat", description="Answers questions about Maxwell House Guilds.")
 @app_commands.describe(message="The question or command to send the chatbot")
@@ -41,20 +52,11 @@ async def chat(interaction: discord.Interaction, message: str):
     #invoking the llm takes too long at this point (beyond the 3 second slash command window)
     #need to defer and use followup instead.
     await interaction.response.defer()
-    response = mhgbot.invoke_llm(message)
-    await interaction.followup.send(response)
+    try:
+        response = mhgbot.invoke_llm(message)
+        for i in chunkstring(response,2000):
+            await interaction.followup.send(i)
+    except:
+        await interaction.followup.send("MHGBot isn't feeling well and an error has occured. Please try sending your message again")
 
 bot.run(TOKEN)
-
-
-#generic client implementation
-#intents = discord.Intents.default()
-#intents.message_content = True
-#client = discord.Client(intents=intents)
-#client = discord.Client()
-
-#@client.event
-#async def on_ready():
- #   print(f'{client.user} has connected to Discord!')
-
-#client.run(TOKEN)
