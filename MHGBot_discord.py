@@ -31,7 +31,7 @@ async def on_ready():
 @bot.tree.command(name="help", description="Described what the MHGBot is and how to use it.")  
 async def help(interaction: discord.Interaction):
     help_text = "The MHGBot is an AI powered chatbot designed to answer user questions about " \
-         "the Maxwell House Guilds and The Elder Scrolls Online. To use the bot, type \chat in a " \
+         "the Maxwell House Guilds and The Elder Scrolls Online. To use the bot, type \\chat in a " \
          "text channel and write your message to the bot. After a few seconds the bot will " \
          "respond to your question or statement."
     await interaction.response.send_message(help_text)

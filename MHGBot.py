@@ -53,17 +53,16 @@ class MHGBot:
                             "https://sites.google.com/view/mh-guilds/guides/healer-stuff",
                             "https://sites.google.com/view/mh-guilds/guides/tank-stuff",
                             "https://sites.google.com/view/mh-guilds/guides/parsing-dps",
-                            "https://sites.google.com/view/mh-guilds/raffle",
-                            "https://thetankclub.com/claw-of-yolnahkriin/",
-                            "https://hacktheminotaur.com/eso-guides/scribing/"])
+                            "https://sites.google.com/view/mh-guilds/raffle"])
 
 
         docs = loader.load()
-        doc_len = 0
-        for doc in docs: doc_len += len(doc.page_content)
-        chunk_size = doc_len/len(docs)
-        chunk_overlap = chunk_size/5
-
+      #  doc_len = 0
+      #  for doc in docs: doc_len += len(doc.page_content)
+     #   chunk_size = (doc_len/len(docs))/10
+      #  chunk_overlap = chunk_size/5
+        chunk_size = 1000
+        chunk_overlap = 200
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         splits = text_splitter.split_documents(docs)
         self.vectorstore = Chroma.from_documents(documents=splits, embedding=self.embeddings, persist_directory="./chroma_db")
