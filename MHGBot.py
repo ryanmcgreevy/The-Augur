@@ -1,6 +1,8 @@
 from langchain_chroma import Chroma
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.retrievers.multi_vector import MultiVectorRetriever
+from langchain.storage import InMemoryByteStore
 import getpass
 import os
 from langchain_core.prompts import ChatPromptTemplate
@@ -30,8 +32,8 @@ class MHGBot:
 
 
         self.vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=self.embeddings)
-        self.retriever = self.vectorstore.as_retriever(search_type="similarity")
-
+        self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0})
+       
         self.prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly helper who is a fellow member of the guild. Answer with as much specific detail as possible. Answer the following question based only on the provided context:
 
         <context>
@@ -54,14 +56,12 @@ class MHGBot:
         docs = loader.load()
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         splits = text_splitter.split_documents(docs)
-        vectorstore = Chroma.from_documents(documents=splits, embedding=self.embeddings, persist_directory="./chroma_db")
+        self.vectorstore = Chroma.from_documents(documents=splits, embedding=self.embeddings, persist_directory="./chroma_db")
+        self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0})
+        document_chain = create_stuff_documents_chain(self.llm, self.prompt)
+        self.retrieval_chain = create_retrieval_chain(self.retriever, document_chain)
     
     def invoke_llm(self, user_input):
         response = self.retrieval_chain.invoke({"input": user_input})
         return response["answer"]
-    
-    def update_vectors(self):
-        self.vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=self.embeddings)
-        self.retriever = self.vectorstore.as_retriever(search_type="similarity")
-        document_chain = create_stuff_documents_chain(self.llm, self.prompt)
-        self.retrieval_chain = create_retrieval_chain(self.retriever, document_chain)
+

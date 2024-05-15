@@ -4,8 +4,6 @@ import os
 from dotenv import load_dotenv
 from discord.ext import commands
 from discord import app_commands
-from io import BytesIO
-import vectorstore
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -43,7 +41,6 @@ async def scrape(interaction: discord.Interaction):
     if(await bot.is_owner(interaction.user)):
         await interaction.response.defer()
         mhgbot.scrape_and_store()
-        mhgbot.update_vectors()
         await interaction.followup.send(ephemeral=True, content="Source data successfully scraped.")
     else:
         await interaction.response.send_message(ephemeral=True, content="You are not authorized to use this command.")
