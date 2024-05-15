@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from discord.ext import commands
 from discord import app_commands
 from io import BytesIO
+import vectorstore
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -12,7 +13,7 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 #bot implementation
 intents = discord.Intents.all()
 intents.message_content = True
-bot = commands.Bot(command_prefix='!', intents=intents, owner_id=414265811713130496)
+bot = commands.Bot(command_prefix='!', intents=intents, owner_ids=[414265811713130496,301648851121471490])
 
 mhgbot = MHGBot()
 
@@ -36,6 +37,17 @@ async def help(interaction: discord.Interaction):
          "text channel and write your message to the bot. After a few seconds the bot will " \
          "respond to your question or statement."
     await interaction.response.send_message(help_text)
+
+@bot.tree.command(name="scrape", description="Forces MHGBot to update its context sources. Owner use only.")  
+async def scrape(interaction: discord.Interaction):
+    if(await bot.is_owner(interaction.user)):
+        await interaction.response.defer()
+        mhgbot.scrape_and_store()
+        mhgbot.update_vectors()
+        await interaction.followup.send(ephemeral=True, content="Source data successfully scraped.")
+    else:
+        await interaction.response.send_message(ephemeral=True, content="You are not authorized to use this command.")
+    
 
 #This function returns a generator, using a generator comprehension. 
 #The generator returns the string sliced, from 0 + a multiple of the length of the chunks, to the length of the chunks + a multiple of the length of the chunks.
