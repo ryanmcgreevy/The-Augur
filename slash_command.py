@@ -3,9 +3,7 @@ import discord
 import os
 from discord import app_commands
 
-TOKEN = os.getenv('DISCORD_TOKEN')
-MY_GUILD = discord.Object(id=420714725505105921)  # replace with your guild id
-
+#Unused client implementation test
 
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
@@ -28,6 +26,9 @@ class MyClient(discord.Client):
         await self.tree.sync(guild=MY_GUILD)
 
 
+TOKEN = os.getenv('DISCORD_TOKEN')
+MY_GUILD = discord.Object(id=420714725505105921)  # replace with your guild id
+mhgbot = MHGBot()
 intents = discord.Intents.default()
 client = MyClient(intents=intents)
 
@@ -37,23 +38,30 @@ async def on_ready():
     print(f'Logged in as {client.user} (ID: {client.user.id})')
     print('------')
 
-
-@client.tree.command()
-async def hello(interaction: discord.Interaction):
-    """Says hello!"""
-    await interaction.response.send_message(f'Hi, {interaction.user.mention}')
-
-mhgbot = MHGBot()
+@client.tree.command(name="sync", description="Syncs slash commands to servers. Usably only by owner.")
+@client.tree
+async def sync(interaction: discord.Interaction):
+    guild = discord.Object(id=420714725505105921)
+    client.tree.copy_global_to(guild=guild)
+    synced = await client.tree.sync(guild=guild)
+    await interaction.response.send_message(f"Synced {len(synced)} commands globally")
 
 @client.tree.command(name="chat", description="Answers questions about Maxwell House Guilds.")
 @app_commands.describe(message="The question or command to send the chatbot")
 async def chat(interaction: discord.Interaction, message: str):
     print("invoking llm...")
-    await interaction.response.defer()
-    response = mhgbot.invoke_llm(message)
+    #await interaction.response.send_message(response)
     #invoking the llm takes too long at this point (beyond the 3 second slash command window)
     #need to defer and use followup instead.
-    #await interaction.response.send_message(response)
-    await interaction.followup.send(response)
+    await interaction.response.defer()
+    response = mhgbot.invoke_llm(message)
+    print("llm response obtained...")
+    channel = interaction.channel
+    print(channel)
+    thread = await channel.create_thread(name=f"{interaction.user.name}'s Thread")
+    print("thread created...")
+    await thread.send(response)
+    print("thread responded...")
+    #await interaction.followup.send(response)
 
 client.run(TOKEN)
