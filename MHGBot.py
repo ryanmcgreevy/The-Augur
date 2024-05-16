@@ -33,9 +33,9 @@ class MHGBot:
 
 
         self.vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=self.embeddings)
-        self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0})
+        self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.5, "k":6})
        
-        self.prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly helper who is a fellow member of the guild. Answer with as much specific detail as possible, but only if you are confident in the answer. Answer the following question based only on the provided context:
+        self.prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly member of the guild. Answer with as much specific detail as possible, but only if you are confident in the answer. Answer the following question based only on the provided context:
 
         <context>
         {context}
@@ -66,7 +66,7 @@ class MHGBot:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         splits = text_splitter.split_documents(docs)
         self.vectorstore = Chroma.from_documents(documents=splits, embedding=self.embeddings, persist_directory="./chroma_db")
-        self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0})
+        self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.5, "k":6})
         document_chain = create_stuff_documents_chain(self.llm, self.prompt)
         self.retrieval_chain = create_retrieval_chain(self.retriever, document_chain)
     
