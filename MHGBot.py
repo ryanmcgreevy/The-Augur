@@ -9,7 +9,11 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.document_loaders import WebBaseLoader
-from langchain_community.document_loaders import FireCrawlLoader
+from langchain_community.document_loaders import DirectoryLoader
+from langchain_community.document_loaders import TextLoader
+import urllib.request
+import requests
+from bs4 import BeautifulSoup
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 class MHGBot:
@@ -57,6 +61,28 @@ class MHGBot:
 
 
         docs = loader.load()
+
+        # url = ("https://drive.google.com/drive/folders/12jfX6Ne1VRS2trAfsO0LPJ4MJZ6wXbbn")
+        # page = requests.get(url).text
+        # print(page)
+        # soup = BeautifulSoup(page, 'html.parser')
+        # links = [url + '/' + node.get('href') for node in soup.find_all('a') if node.get('href').endswith('nc')]
+        # for link in links:
+        #     print(link)
+        #     filename = link.split('/')[-1]
+        #     print(filename)
+        #     urllib.request.urlretrieve(link,filename)
+        #     tloader = TextLoader(filename)
+        #     tdoc = tloader.load()
+        #     docs.append(tdoc)
+
+        dloader = DirectoryLoader('./MHGBot/mhg', glob="**/*.txt", loader_cls=TextLoader)
+        for tdoc in dloader.load(): docs.append(tdoc)
+        dloader = DirectoryLoader('./MHGBot/alcast', glob="**/*.txt", loader_cls=TextLoader)
+        for tdoc in dloader.load(): docs.append(tdoc)
+        dloader = DirectoryLoader('./MHGBot/skinny_cheeks', glob="**/*.txt", loader_cls=TextLoader)
+        for tdoc in dloader.load(): docs.append(tdoc)
+        print(len(docs))
       #  doc_len = 0
       #  for doc in docs: doc_len += len(doc.page_content)
      #   chunk_size = (doc_len/len(docs))/10
