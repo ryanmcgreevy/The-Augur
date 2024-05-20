@@ -54,9 +54,9 @@ class MHGBot:
         loader = WebBaseLoader(["https://sites.google.com/view/mh-guilds/guides-and-stuff/rules-policies", 
                             "https://sites.google.com/view/mh-guilds/welcome",
                             "https://sites.google.com/view/mh-guilds/guides/trading",
-                            "https://sites.google.com/view/mh-guilds/guides/healer-stuff",
-                            "https://sites.google.com/view/mh-guilds/guides/tank-stuff",
-                            "https://sites.google.com/view/mh-guilds/guides/parsing-dps",
+                            "https://sites.google.com/view/mh-guilds/guides/healer-role",
+                            "https://sites.google.com/view/mh-guilds/guides/tank-role",
+                            "https://sites.google.com/view/mh-guilds/guides/dps-role",
                             "https://sites.google.com/view/mh-guilds/raffle"])
 
 
@@ -75,7 +75,7 @@ class MHGBot:
         #     tloader = TextLoader(filename)
         #     tdoc = tloader.load()
         #     docs.append(tdoc)
-
+        print(os.getcwd())
         dloader = DirectoryLoader('./MHGBot/mhg', glob="**/*.txt", loader_cls=TextLoader)
         for tdoc in dloader.load(): docs.append(tdoc)
         dloader = DirectoryLoader('./MHGBot/alcast', glob="**/*.txt", loader_cls=TextLoader)
