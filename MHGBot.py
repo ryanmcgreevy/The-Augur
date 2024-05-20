@@ -57,7 +57,8 @@ class MHGBot:
                             "https://sites.google.com/view/mh-guilds/guides/healer-role",
                             "https://sites.google.com/view/mh-guilds/guides/tank-role",
                             "https://sites.google.com/view/mh-guilds/guides/dps-role",
-                            "https://sites.google.com/view/mh-guilds/raffle"])
+                            "https://sites.google.com/view/mh-guilds/raffle",
+                            "https://sites.google.com/view/mh-guilds/trial-notes/aetherian-archive"])
 
 
         docs = loader.load()
