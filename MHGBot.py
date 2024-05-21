@@ -77,12 +77,14 @@ class MHGBot:
         #     tdoc = tloader.load()
         #     docs.append(tdoc)
         print(os.getcwd())
-        dloader = DirectoryLoader('./MHGBot/mhg', glob="**/*.txt", loader_cls=TextLoader)
-        for tdoc in dloader.load(): docs.append(tdoc)
+        #dloader = DirectoryLoader('./MHGBot/mhg', glob="**/*.txt", loader_cls=TextLoader)
+        #for tdoc in dloader.load(): docs.append(tdoc)
         dloader = DirectoryLoader('./MHGBot/alcast', glob="**/*.txt", loader_cls=TextLoader)
         for tdoc in dloader.load(): docs.append(tdoc)
         dloader = DirectoryLoader('./MHGBot/skinny_cheeks', glob="**/*.txt", loader_cls=TextLoader)
-        for tdoc in dloader.load(): docs.append(tdoc)
+        for tdoc in dloader.load(): docs.append(tdoc
+        dloader = DirectoryLoader('./MHGBot/hacktm', glob="**/*.txt", loader_cls=TextLoader)
+        for tdoc in dloader.load(): docs.append(tdoc))
         print(len(docs))
       #  doc_len = 0
       #  for doc in docs: doc_len += len(doc.page_content)
