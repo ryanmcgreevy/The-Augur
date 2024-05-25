@@ -16,7 +16,7 @@ import requests
 from bs4 import BeautifulSoup
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-class MHGBot:
+class Augur:
     
     def __init__(self) -> None:
         
