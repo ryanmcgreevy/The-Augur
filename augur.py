@@ -36,7 +36,7 @@ class Augur:
         self.embeddings=OpenAIEmbeddings()
 
 
-        self.vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=self.embeddings)
+        self.vectorstore = Chroma(persist_directory="chroma_db", embedding_function=self.embeddings)
         self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.5, "k":6})
        
         self.prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly member of the guild. Answer with as much specific detail as possible, but only if you are confident in the answer. Answer the following question based only on the provided context:
@@ -77,13 +77,13 @@ class Augur:
         #     tdoc = tloader.load()
         #     docs.append(tdoc)
         print(os.getcwd())
-        #dloader = DirectoryLoader('./MHGBot/mhg', glob="**/*.txt", loader_cls=TextLoader)
+        #dloader = DirectoryLoader('./context_files/mhg', glob="**/*.txt", loader_cls=TextLoader)
         #for tdoc in dloader.load(): docs.append(tdoc)
-        dloader = DirectoryLoader('./MHGBot/alcast', glob="**/*.txt", loader_cls=TextLoader)
+        dloader = DirectoryLoader('context_files/alcast', glob="**/*.txt", loader_cls=TextLoader)
         for tdoc in dloader.load(): docs.append(tdoc)
-        dloader = DirectoryLoader('./MHGBot/skinny_cheeks', glob="**/*.txt", loader_cls=TextLoader)
+        dloader = DirectoryLoader('context_files/skinny_cheeks', glob="**/*.txt", loader_cls=TextLoader)
         for tdoc in dloader.load(): docs.append(tdoc)
-        dloader = DirectoryLoader('./MHGBot/hacktm', glob="**/*.txt", loader_cls=TextLoader)
+        dloader = DirectoryLoader('context_files/hacktm', glob="**/*.txt", loader_cls=TextLoader)
         for tdoc in dloader.load(): docs.append(tdoc)
         print(len(docs))
       #  doc_len = 0
