@@ -58,7 +58,8 @@ class Augur:
                             "https://sites.google.com/view/mh-guilds/guides/tank-role",
                             "https://sites.google.com/view/mh-guilds/guides/dps-role",
                             "https://sites.google.com/view/mh-guilds/raffle",
-                            "https://sites.google.com/view/mh-guilds/trial-notes/aetherian-archive"])
+                            "https://sites.google.com/view/mh-guilds/trial-notes/aetherian-archive",
+                            "https://sites.google.com/view/mh-guilds/guides/scribing"])
 
 
         docs = loader.load()
@@ -84,6 +85,8 @@ class Augur:
         dloader = DirectoryLoader('context_files/skinny_cheeks', glob="**/*.txt", loader_cls=TextLoader)
         for tdoc in dloader.load(): docs.append(tdoc)
         dloader = DirectoryLoader('context_files/hacktm', glob="**/*.txt", loader_cls=TextLoader)
+        for tdoc in dloader.load(): docs.append(tdoc)
+        dloader = DirectoryLoader('context_files/deltia', glob="**/*.txt", loader_cls=TextLoader)
         for tdoc in dloader.load(): docs.append(tdoc)
         print(len(docs))
       #  doc_len = 0
