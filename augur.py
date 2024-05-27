@@ -88,6 +88,12 @@ class Augur:
         for tdoc in dloader.load(): docs.append(tdoc)
         dloader = DirectoryLoader('context_files/deltia', glob="**/*.txt", loader_cls=TextLoader)
         for tdoc in dloader.load(): docs.append(tdoc)
+        dloader = DirectoryLoader('context_files/just_loot_it', glob="**/*.txt", loader_cls=TextLoader)
+        for tdoc in dloader.load(): docs.append(tdoc)
+        dloader = DirectoryLoader('context_files/highground_gaming', glob="**/*.txt", loader_cls=TextLoader)
+        for tdoc in dloader.load(): docs.append(tdoc)
+        dloader = DirectoryLoader('context_files/uesp', glob="**/*.txt", loader_cls=TextLoader)
+        for tdoc in dloader.load(): docs.append(tdoc)
         print(len(docs))
       #  doc_len = 0
       #  for doc in docs: doc_len += len(doc.page_content)
