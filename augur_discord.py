@@ -22,6 +22,9 @@ async def sync(ctx):
     guild = discord.Object(id=420714725505105921)
     ctx.bot.tree.copy_global_to(guild=guild)
     synced = await ctx.bot.tree.sync(guild=guild)
+    guild = discord.Object(id=754463742246387732)
+    ctx.bot.tree.copy_global_to(guild=guild)
+    synced = await ctx.bot.tree.sync(guild=guild)
     await ctx.send(f"Synced {len(synced)} commands to guild")
 
 @bot.event
