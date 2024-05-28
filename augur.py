@@ -5,6 +5,7 @@ from langchain.retrievers.multi_vector import MultiVectorRetriever
 from langchain.storage import InMemoryByteStore
 import getpass
 import os
+from os import walk
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
@@ -64,43 +65,10 @@ class Augur:
 
         docs = loader.load()
 
-        # url = ("https://drive.google.com/drive/folders/12jfX6Ne1VRS2trAfsO0LPJ4MJZ6wXbbn")
-        # page = requests.get(url).text
-        # print(page)
-        # soup = BeautifulSoup(page, 'html.parser')
-        # links = [url + '/' + node.get('href') for node in soup.find_all('a') if node.get('href').endswith('nc')]
-        # for link in links:
-        #     print(link)
-        #     filename = link.split('/')[-1]
-        #     print(filename)
-        #     urllib.request.urlretrieve(link,filename)
-        #     tloader = TextLoader(filename)
-        #     tdoc = tloader.load()
-        #     docs.append(tdoc)
-        print(os.getcwd())
-        #dloader = DirectoryLoader('./context_files/mhg', glob="**/*.txt", loader_cls=TextLoader)
-        #for tdoc in dloader.load(): docs.append(tdoc)
-        dloader = DirectoryLoader('context_files/alcast', glob="**/*.txt", loader_cls=TextLoader)
-        for tdoc in dloader.load(): docs.append(tdoc)
-        print(f"loaded alcast! {len(docs)}")
-        dloader = DirectoryLoader('context_files/skinny_cheeks', glob="**/*.txt", loader_cls=TextLoader)
-        for tdoc in dloader.load(): docs.append(tdoc)
-        print(f"loaded skinny cheeks! {len(docs)}")
-        dloader = DirectoryLoader('context_files/hacktm', glob="**/*.txt", loader_cls=TextLoader)
-        for tdoc in dloader.load(): docs.append(tdoc)
-        print(f"loaded hacktm! {len(docs)}")
-        dloader = DirectoryLoader('context_files/deltia', glob="**/*.txt", loader_cls=TextLoader)
-        for tdoc in dloader.load(): docs.append(tdoc)
-        print(f"loaded deltia! {len(docs)}")
-        dloader = DirectoryLoader('context_files/just_loot_it', glob="**/*.txt", loader_cls=TextLoader)
-        for tdoc in dloader.load(): docs.append(tdoc)
-        print(f"loaded just loot it! {len(docs)}")
-        dloader = DirectoryLoader('context_files/highground_gaming', glob="**/*.txt", loader_cls=TextLoader)
-        for tdoc in dloader.load(): docs.append(tdoc)
-        print(f"loaded highground! {len(docs)}")
-        dloader = DirectoryLoader('context_files/uesp', glob="**/*.txt", loader_cls=TextLoader)
-        for tdoc in dloader.load(): docs.append(tdoc)
-        print(f"loaded uesp! {len(docs)}")
+        for (dirpath, dirnames, filenames) in walk('context_files/'):
+            dloader = DirectoryLoader(dirpath, glob="**/*.txt", loader_cls=TextLoader)
+            for tdoc in dloader.load(): docs.append(tdoc)
+
         print(len(docs))
       #  doc_len = 0
       #  for doc in docs: doc_len += len(doc.page_content)
