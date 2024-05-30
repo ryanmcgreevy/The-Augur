@@ -11,6 +11,7 @@ from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.document_loaders import DirectoryLoader
+from langchain_community.document_loaders import UnstructuredFileLoader
 from langchain_community.document_loaders import TextLoader
 import urllib.request
 import requests
@@ -66,7 +67,10 @@ class Augur:
         docs = loader.load()
 
         for (dirpath, dirnames, filenames) in walk('context_files/'):
-            dloader = DirectoryLoader(dirpath, glob="**/*.txt", loader_cls=TextLoader)
+           dloader = DirectoryLoader(dirpath, glob="**/*.txt", loader_cls=TextLoader)
+           for tdoc in dloader.load(): docs.append(tdoc)
+        for (dirpath, dirnames, filenames) in walk('context_files/md/'):  
+            dloader = DirectoryLoader(dirpath, glob="**/*.md")
             for tdoc in dloader.load(): docs.append(tdoc)
 
         print(len(docs))
