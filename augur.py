@@ -3,6 +3,8 @@ from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.retrievers.multi_vector import MultiVectorRetriever
 from langchain.retrievers import ParentDocumentRetriever
+from langchain.storage._lc_store import create_kv_docstore
+from langchain.storage.file_system import LocalFileStore
 from langchain.storage import InMemoryStore
 from langchain.storage import InMemoryByteStore
 import getpass
@@ -39,9 +41,28 @@ class Augur:
         self.llm = ChatOpenAI(model="gpt-4o")
         self.embeddings=OpenAIEmbeddings()
 
-        self.vectorstore = Chroma(persist_directory="chroma_db", embedding_function=self.embeddings)
-        self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.5, "k":6})
-       
+        child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
+
+        #self.vectorstore = Chroma(persist_directory="chroma_db", embedding_function=self.embeddings)
+        #self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.5, "k":6})
+        fs = LocalFileStore("./store_location")
+        store = create_kv_docstore(fs)
+        parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
+        child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
+
+        self.vectorstore = Chroma(collection_name="split_parents", embedding_function=self.embeddings, persist_directory="./db")
+        self.retriever = ParentDocumentRetriever(
+        vectorstore=self.vectorstore,
+        docstore=store,
+        child_splitter=child_splitter,
+        parent_splitter=parent_splitter,
+        )
+        #store = InMemoryStore()
+        self.retriever = ParentDocumentRetriever(
+            vectorstore=self.vectorstore,
+            docstore=store,
+            child_splitter=child_splitter,
+        )
         self.prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly member of the guild. Answer with as much specific detail as possible, but only if you are confident in the answer. Answer the following question based only on the provided context:
 
         <context>

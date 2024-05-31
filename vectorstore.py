@@ -9,6 +9,9 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import DirectoryLoader
 from langchain_community.document_loaders import TextLoader
+from langchain.storage._lc_store import create_kv_docstore
+from langchain.retrievers import ParentDocumentRetriever
+from langchain.storage.file_system import LocalFileStore
 
 #from langchain_community.embeddings import OllamaEmbeddings
 #for offline llm
@@ -41,10 +44,24 @@ def scrape_and_store():
         dloader = DirectoryLoader(dirpath, glob="**/*.md", use_multithreading=True)
         for tdoc in dloader.load(): docs.append(tdoc)
     print(len(docs))
-    chunk_size = 1000
-    chunk_overlap = 200
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-    splits = text_splitter.split_documents(docs)
-    vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, persist_directory="./chroma_db")
+    #chunk_size = 1000
+    #chunk_overlap = 200
+    #text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    #splits = text_splitter.split_documents(docs)
+    #vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, persist_directory="./chroma_db")
+
+    fs = LocalFileStore("./store_location")
+    store = create_kv_docstore(fs)
+    parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
+    child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
+
+    vectorstore = Chroma(collection_name="split_parents", embedding_function=embeddings, persist_directory="./db")
+    retriever = ParentDocumentRetriever(
+        vectorstore=vectorstore,
+        docstore=store,
+        child_splitter=child_splitter,
+        parent_splitter=parent_splitter,
+    )
+    retriever.add_documents(docs, ids=None)
 
 scrape_and_store()
