@@ -2,6 +2,8 @@ from langchain_chroma import Chroma
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.retrievers.multi_vector import MultiVectorRetriever
+from langchain.retrievers import ParentDocumentRetriever
+from langchain.storage import InMemoryStore
 from langchain.storage import InMemoryByteStore
 import getpass
 import os
@@ -36,7 +38,6 @@ class Augur:
         #llm = ChatOpenAI(model="gpt-3.5-turbo-0125")
         self.llm = ChatOpenAI(model="gpt-4o")
         self.embeddings=OpenAIEmbeddings()
-
 
         self.vectorstore = Chroma(persist_directory="chroma_db", embedding_function=self.embeddings)
         self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.5, "k":6})
@@ -83,7 +84,7 @@ class Augur:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         splits = text_splitter.split_documents(docs)
         self.vectorstore = Chroma.from_documents(documents=splits, embedding=self.embeddings, persist_directory="./chroma_db")
-        self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.5, "k":6})
+        self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.75, "k":5})
         document_chain = create_stuff_documents_chain(self.llm, self.prompt)
         self.retrieval_chain = create_retrieval_chain(self.retriever, document_chain)
     

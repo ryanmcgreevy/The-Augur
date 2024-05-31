@@ -35,12 +35,12 @@ def scrape_and_store():
     docs = loader.load()
 
     for (dirpath, dirnames, filenames) in walk('context_files/'):
-        dloader = DirectoryLoader(dirpath, glob="**/*.txt", loader_cls=TextLoader)
+        dloader = DirectoryLoader(dirpath, glob="**/*.txt", loader_cls=TextLoader, use_multithreading=True)
         for tdoc in dloader.load(): docs.append(tdoc)
     for (dirpath, dirnames, filenames) in walk('context_files/md/'):  
-        dloader = DirectoryLoader(dirpath, glob="**/*.md")
+        dloader = DirectoryLoader(dirpath, glob="**/*.md", use_multithreading=True)
         for tdoc in dloader.load(): docs.append(tdoc)
-
+    print(len(docs))
     chunk_size = 1000
     chunk_overlap = 200
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
