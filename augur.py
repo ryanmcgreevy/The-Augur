@@ -55,14 +55,16 @@ class Augur:
         vectorstore=self.vectorstore,
         docstore=store,
         child_splitter=child_splitter,
-        parent_splitter=parent_splitter,
+        search_type="mmr", 
+        search_kwargs={"lambda_mult":0.5, "k":6},
+        #parent_splitter=parent_splitter,
         )
         #store = InMemoryStore()
-        self.retriever = ParentDocumentRetriever(
-            vectorstore=self.vectorstore,
-            docstore=store,
-            child_splitter=child_splitter,
-        )
+        # self.retriever = ParentDocumentRetriever(
+        #     vectorstore=self.vectorstore,
+        #     docstore=store,
+        #     child_splitter=child_splitter,
+        # )
         self.prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly member of the guild. Answer with as much specific detail as possible, but only if you are confident in the answer. Answer the following question based only on the provided context:
 
         <context>

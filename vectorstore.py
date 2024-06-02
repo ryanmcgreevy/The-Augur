@@ -60,7 +60,7 @@ def scrape_and_store():
         vectorstore=vectorstore,
         docstore=store,
         child_splitter=child_splitter,
-        parent_splitter=parent_splitter,
+        #parent_splitter=parent_splitter,
     )
     retriever.add_documents(docs, ids=None)
 
