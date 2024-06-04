@@ -70,9 +70,14 @@ def scrape_and_store():
     def add_to_chroma_database(batch):
         retriever.add_documents(documents=batch)
 
-    batch_size = 41000
+    #limit is 41666, but because we are passing the child splitter to ParentDocumentRetriever,
+    #and not just splitting the docs and feeding them in ourselves, we need to make this batch size
+    #relatively small to make sure we don't exceed the limit as the retriever is splitting the doc input
+    batch_size = 50
 
     batch_process(docs, batch_size, add_to_chroma_database)
+
+
     #retriever.add_documents(docs, ids=None)
 
 scrape_and_store()
