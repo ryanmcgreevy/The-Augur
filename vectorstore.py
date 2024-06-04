@@ -62,6 +62,17 @@ def scrape_and_store():
         child_splitter=child_splitter,
         #parent_splitter=parent_splitter,
     )
-    retriever.add_documents(docs, ids=None)
+    def batch_process(documents_arr, batch_size, process_function):
+        for i in range(0, len(documents_arr), batch_size):
+            batch = documents_arr[i:i + batch_size]
+            process_function(batch)
+
+    def add_to_chroma_database(batch):
+        retriever.add_documents(documents=batch)
+
+    batch_size = 41000
+
+    batch_process(docs, batch_size, add_to_chroma_database)
+    #retriever.add_documents(docs, ids=None)
 
 scrape_and_store()

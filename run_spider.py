@@ -10,7 +10,7 @@ def crawl(name, url):
     crawler_params = {
         'limit': 5000,
         'proxy_enabled': True,
-        'store_data': False,
+        'store_data': True,
         'metadata': False,
         'request': 'smart_mode',
         'return_format': 'markdown'
@@ -21,7 +21,7 @@ def crawl(name, url):
     if not os.path.exists(local_dir):
         os.makedirs(local_dir)
     for result in crawl_result:
-        url_name = result['url'].split("/")[-2]
+        url_name = result['url'].split("/")[-1]
         if url_name != '':
             filename = os.path.join( local_dir, url_name + '.md')
         else:
@@ -48,7 +48,7 @@ def scrape(name, url):
     local_dir = os.path.join( 'context_files', 'md', name)
     if not os.path.exists(local_dir):
         os.makedirs(local_dir)
-    url_name = url.split("/")[-2]
+    url_name = url.split("/")[-1]
     if url_name != '':
         filename = os.path.join( local_dir, url_name + '.md')
     else:
