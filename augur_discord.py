@@ -39,14 +39,14 @@ async def help(interaction: discord.Interaction):
          "respond to your question or statement."
     await interaction.response.send_message(help_text)
 
-@bot.tree.command(name="scrape", description="Forces The Augur to update its context sources. Owner use only.")  
-async def scrape(interaction: discord.Interaction):
-    if(await bot.is_owner(interaction.user)):
-        await interaction.response.defer()
-        augur.scrape_and_store()
-        await interaction.followup.send(ephemeral=True, content="Source data successfully scraped.")
-    else:
-        await interaction.response.send_message(ephemeral=True, content="You are not authorized to use this command.")
+# @bot.tree.command(name="scrape", description="Forces The Augur to update its context sources. Owner use only.")  
+# async def scrape(interaction: discord.Interaction):
+#     if(await bot.is_owner(interaction.user)):
+#         await interaction.response.defer()
+#         augur.scrape_and_store()
+#         await interaction.followup.send(ephemeral=True, content="Source data successfully scraped.")
+#     else:
+#         await interaction.response.send_message(ephemeral=True, content="You are not authorized to use this command.")
     
 
 #This function returns a generator, using a generator comprehension. 

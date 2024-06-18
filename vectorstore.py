@@ -24,25 +24,28 @@ from langchain.storage.file_system import LocalFileStore
 def scrape_and_store():
     embeddings=OpenAIEmbeddings()
 
-    loader = WebBaseLoader(["https://sites.google.com/view/mh-guilds/guides-and-stuff/rules-policies", 
-                        "https://sites.google.com/view/mh-guilds/welcome",
-                        "https://sites.google.com/view/mh-guilds/guides/trading",
-                        "https://sites.google.com/view/mh-guilds/guides/healer-role",
-                        "https://sites.google.com/view/mh-guilds/guides/tank-role",
-                        "https://sites.google.com/view/mh-guilds/guides/dps-role",
-                        "https://sites.google.com/view/mh-guilds/raffle",
-                        "https://sites.google.com/view/mh-guilds/trial-notes/aetherian-archive",
-                        "https://sites.google.com/view/mh-guilds/guides/scribing"])
+    # loader = WebBaseLoader(["https://sites.google.com/view/mh-guilds/guides-and-stuff/rules-policies", 
+    #                     "https://sites.google.com/view/mh-guilds/welcome",
+    #                     "https://sites.google.com/view/mh-guilds/guides/trading",
+    #                     "https://sites.google.com/view/mh-guilds/guides/healer-role",
+    #                     "https://sites.google.com/view/mh-guilds/guides/tank-role",
+    #                     "https://sites.google.com/view/mh-guilds/guides/dps-role",
+    #                     "https://sites.google.com/view/mh-guilds/raffle",
+    #                     "https://sites.google.com/view/mh-guilds/trial-notes/aetherian-archive",
+    #                     "https://sites.google.com/view/mh-guilds/guides/scribing"])
 
 
-    docs = loader.load()
+    # docs = loader.load()
+
+    docs = []
 
     for (dirpath, dirnames, filenames) in walk('context_files/'):
-        dloader = DirectoryLoader(dirpath, glob="**/*.txt", loader_cls=TextLoader, use_multithreading=True)
-        for tdoc in dloader.load(): docs.append(tdoc)
-    for (dirpath, dirnames, filenames) in walk('context_files/md/'):  
-        dloader = DirectoryLoader(dirpath, glob="**/*.md", use_multithreading=True)
-        for tdoc in dloader.load(): docs.append(tdoc)
+       dloader = DirectoryLoader(dirpath, glob="**/*.txt", loader_cls=TextLoader, use_multithreading=True)
+       for tdoc in dloader.load(): docs.append(tdoc)
+
+    for (dirpath, dirnames, filenames) in walk('context_files/'):  
+         dloader = DirectoryLoader(dirpath, glob="**/*.md", use_multithreading=True)
+         for tdoc in dloader.load(): docs.append(tdoc)
     print(len(docs))
     #chunk_size = 1000
     #chunk_overlap = 200
