@@ -12,6 +12,7 @@ from langchain_community.document_loaders import TextLoader
 from langchain.storage._lc_store import create_kv_docstore
 from langchain.retrievers import ParentDocumentRetriever
 from langchain.storage.file_system import LocalFileStore
+import argparse
 
 #from langchain_community.embeddings import OllamaEmbeddings
 #for offline llm
@@ -21,7 +22,7 @@ from langchain.storage.file_system import LocalFileStore
 #For now, we are using the environment variable set by our bash profile
 #os.environ["OPENAI_API_KEY"] = getpass.getpass()
 
-def scrape_and_store():
+def scrape_and_store(name,mode):
     embeddings=OpenAIEmbeddings()
 
     # loader = WebBaseLoader(["https://sites.google.com/view/mh-guilds/guides-and-stuff/rules-policies", 
@@ -39,13 +40,15 @@ def scrape_and_store():
 
     docs = []
 
-    for (dirpath, dirnames, filenames) in walk('context_files/'):
-       dloader = DirectoryLoader(dirpath, glob="**/*.txt", loader_cls=TextLoader, use_multithreading=True)
-       for tdoc in dloader.load(): docs.append(tdoc)
+    if mode == 'dir':
+        dloader = DirectoryLoader(name, glob="**/*.txt", loader_cls=TextLoader, use_multithreading=True)
+        for tdoc in dloader.load(): docs.append(tdoc)
 
-    for (dirpath, dirnames, filenames) in walk('context_files/'):  
-         dloader = DirectoryLoader(dirpath, glob="**/*.md", use_multithreading=True)
-         for tdoc in dloader.load(): docs.append(tdoc)
+        dloader = DirectoryLoader(name, glob="**/*.md", use_multithreading=True)
+        for tdoc in dloader.load(): docs.append(tdoc)
+    elif mode == 'file':
+        loader = TextLoader(name)
+        docs = loader.load()
     print(len(docs))
     #chunk_size = 1000
     #chunk_overlap = 200
@@ -83,4 +86,8 @@ def scrape_and_store():
 
     #retriever.add_documents(docs, ids=None)
 
-scrape_and_store()
+parser = argparse.ArgumentParser("vectorstore")
+parser.add_argument("path", help="Path of directory (for dir mode) or filename (for file mode).", type=str)
+parser.add_argument("mode", help="dir | file to determine whether to load all files in a directory or add a single file to the database.", type=str, choices=['dir', 'file'], )
+args = parser.parse_args()
+scrape_and_store(name=args.path,mode=args.mode)

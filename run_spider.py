@@ -18,7 +18,7 @@ def crawl(name, url):
     }
     crawl_result = app.crawl_url(url, params=crawler_params)
     print("crawl complete! Saving to files...")
-    local_dir = os.path.join( 'context_files', 'md', name)
+    local_dir = os.path.join( 'context_files_dump', 'md', name)
     if not os.path.exists(local_dir):
         os.makedirs(local_dir)
     for result in crawl_result:
@@ -87,7 +87,7 @@ def scrape(name, url):
     }
     scraped_data = app.scrape_url(url, params=scrape_params, stream=True, content_type="application/json")
     print("scrape complete! Saving to files...")
-    local_dir = os.path.join( 'context_files_sub', 'md', name)
+    local_dir = os.path.join( 'context_files_dump', 'md', name)
     if not os.path.exists(local_dir):
         os.makedirs(local_dir)
     url_name = url.split("/")[-2] + '_' + url.split("/")[-1]
