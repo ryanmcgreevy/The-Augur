@@ -4,7 +4,8 @@ import os
 from dotenv import load_dotenv
 from discord.ext import commands
 from discord import app_commands
-
+from discord.ui import Button
+from discord import ButtonStyle
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
@@ -22,7 +23,10 @@ async def sync(ctx):
     guild = discord.Object(id=420714725505105921)
     ctx.bot.tree.copy_global_to(guild=guild)
     synced = await ctx.bot.tree.sync(guild=guild)
-    guild = discord.Object(id=754463742246387732)
+    # guild = discord.Object(id=754463742246387732)
+    # ctx.bot.tree.copy_global_to(guild=guild)
+    # synced = await ctx.bot.tree.sync(guild=guild)
+    guild = discord.Object(id=1274425311039197345)
     ctx.bot.tree.copy_global_to(guild=guild)
     synced = await ctx.bot.tree.sync(guild=guild)
     await ctx.send(f"Synced {len(synced)} commands to guild")
@@ -59,6 +63,16 @@ def chunkstring(string, length):
 @bot.tree.command(name="chat", description="Answers questions about Maxwell House Guilds and The Elder Scrolls Online.")
 @app_commands.describe(message="The question or command to send the chatbot")
 async def chat(interaction: discord.Interaction, message: str):
+    for entitlement in interaction.entitlements:
+        if (entitlement.sku_id == 1274410251608657982):
+            break
+        else:
+          button = Button(style=ButtonStyle.premium, sku_id=1274410251608657982)  
+          buttonview = discord.ui.View()
+          buttonview.add_item(button)
+          await interaction.response.send_message(content="This command is only available with a premium subscription!", 
+                                                  view=buttonview)
+          
     print("invoking llm...")
     #await interaction.response.send_message(response)
     #invoking the llm takes too long at this point (beyond the 3 second slash command window)
