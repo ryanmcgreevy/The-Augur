@@ -55,8 +55,8 @@ class Augur:
         vectorstore=self.vectorstore,
         docstore=store,
         child_splitter=child_splitter,
-        search_type="mmr", 
-        search_kwargs={"lambda_mult":0.5, "k":6},
+        #search_type="mmr", 
+        #search_kwargs={"lambda_mult":0.75, "k":4},
         #parent_splitter=parent_splitter,
         )
         #store = InMemoryStore()
