@@ -19,21 +19,29 @@ augur = Augur()
 @bot.command()
 @commands.is_owner()
 async def sync(ctx):
-    print("sync command")
-    guild = discord.Object(id=420714725505105921)
-    ctx.bot.tree.copy_global_to(guild=guild)
-    synced = await ctx.bot.tree.sync(guild=guild)
+    # print("sync command")
+    # guild = discord.Object(id=420714725505105921)
+    # ctx.bot.tree.copy_global_to(guild=guild)
+    synced = await ctx.bot.tree.sync()
+    #synced = await ctx.bot.tree.sync(guild=guild)
     # guild = discord.Object(id=754463742246387732)
     # ctx.bot.tree.copy_global_to(guild=guild)
     # synced = await ctx.bot.tree.sync(guild=guild)
-    guild = discord.Object(id=1274425311039197345)
-    ctx.bot.tree.copy_global_to(guild=guild)
-    synced = await ctx.bot.tree.sync(guild=guild)
+    #guild = discord.Object(id=1274425311039197345)
+   # ctx.bot.tree.copy_global_to(guild=guild)
+    #synced = await ctx.bot.tree.sync(guild=guild)
     await ctx.send(f"Synced {len(synced)} commands to guild")
 
 @bot.event
 async def on_ready():
    print(f'{bot.user.name} has connected to Discord!')
+
+@bot.event
+async def on_guild_join(guild):
+   print(f'Joined {guild.name} server!')
+   bot.tree.copy_global_to(guild=guild)
+   synced = await bot.tree.sync(guild=guild)
+   print(f"Synced {len(synced)} commands to guild")
 
 @bot.tree.command(name="help", description="Describes what The Augur is and how to use it.")  
 async def help(interaction: discord.Interaction):
@@ -60,11 +68,11 @@ async def help(interaction: discord.Interaction):
 def chunkstring(string, length):
     return (string[0+i:length+i] for i in range(0, len(string), length))
 
-@bot.tree.command(name="chat", description="Answers questions about Maxwell House Guilds and The Elder Scrolls Online.")
+@bot.tree.command(name="chat", description="Answers questions about The Elder Scrolls Online.")
 @app_commands.describe(message="The question or command to send the chatbot")
 async def chat(interaction: discord.Interaction, message: str):
     for entitlement in interaction.entitlements:
-        if (entitlement.sku_id == 1274410251608657982):
+        if (entitlement.sku_id == 1274410251608657982 or interaction.guild_id == 754463742246387732 or interaction.guild.owner_id == 414265811713130496 ):
             break
         else:
           button = Button(style=ButtonStyle.premium, sku_id=1274410251608657982)  
