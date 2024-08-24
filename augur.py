@@ -22,8 +22,11 @@ import requests
 from bs4 import BeautifulSoup
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+import discord
+
+
 class Augur:
-    
+
     def __init__(self) -> None:
         
         #for offline llm
@@ -38,7 +41,7 @@ class Augur:
         #os.environ["OPENAI_API_KEY"] = getpass.getpass()
 
         #llm = ChatOpenAI(model="gpt-3.5-turbo-0125")
-        self.llm = ChatOpenAI(model="gpt-4o")
+        self.llm = ChatOpenAI(model="gpt-4o-mini")
         self.embeddings=OpenAIEmbeddings()
 
         child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
@@ -75,6 +78,7 @@ class Augur:
 
         document_chain = create_stuff_documents_chain(self.llm, self.prompt)
         self.retrieval_chain = create_retrieval_chain(self.retriever, document_chain)
+        
 
     # def scrape_and_store(self):
     #     loader = WebBaseLoader(["https://sites.google.com/view/mh-guilds/guides-and-stuff/rules-policies", 
@@ -110,8 +114,18 @@ class Augur:
     #     self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.75, "k":5})
     #     document_chain = create_stuff_documents_chain(self.llm, self.prompt)
     #     self.retrieval_chain = create_retrieval_chain(self.retriever, document_chain)
-    
-    def invoke_llm(self, user_input):
-        response = self.retrieval_chain.invoke({"input": user_input})
-        return response["answer"]
+
+    #This function returns a generator, using a generator comprehension. 
+    #The generator returns the string sliced, from 0 + a multiple of the length of the chunks, to the length of the chunks + a multiple of the length of the chunks.
+    #You can iterate over the generator like a list, tuple or string - for i in chunkstring(s,n): , or convert it into a list (for instance) with list(generator). 
+    #Generators are more memory efficient than lists because they generator their elements as they are needed, not all at once, however they lack certain features like indexing.
+    def chunkstring(self, string, length):
+        return (string[0+i:length+i] for i in range(0, len(string), length))
+
+    async def invoke_llm(self, user_input, interaction: discord.Interaction):
+        response = await self.retrieval_chain.ainvoke({"input": user_input})
+        answer = response.get('answer')
+        for i in self.chunkstring(answer,2000):
+            await interaction.followup.send(i)
+
 

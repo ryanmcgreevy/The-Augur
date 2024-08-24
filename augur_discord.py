@@ -6,6 +6,8 @@ from discord.ext import commands
 from discord import app_commands
 from discord.ui import Button
 from discord import ButtonStyle
+from discord.ext.commands import BucketType
+import asyncio
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
@@ -46,7 +48,7 @@ async def on_guild_join(guild):
 @bot.tree.command(name="help", description="Describes what The Augur is and how to use it.")  
 async def help(interaction: discord.Interaction):
     help_text = "The Augur is an AI powered chatbot designed to answer user questions about " \
-         "the Maxwell House Guilds and The Elder Scrolls Online. To use the bot, type \\chat in a " \
+         "The Elder Scrolls Online. To use the bot, type \\chat in a " \
          "text channel and write your message to the bot. After a few seconds the bot will " \
          "respond to your question or statement."
     await interaction.response.send_message(help_text)
@@ -65,11 +67,12 @@ async def help(interaction: discord.Interaction):
 #The generator returns the string sliced, from 0 + a multiple of the length of the chunks, to the length of the chunks + a multiple of the length of the chunks.
 #You can iterate over the generator like a list, tuple or string - for i in chunkstring(s,n): , or convert it into a list (for instance) with list(generator). 
 #Generators are more memory efficient than lists because they generator their elements as they are needed, not all at once, however they lack certain features like indexing.
-def chunkstring(string, length):
-    return (string[0+i:length+i] for i in range(0, len(string), length))
+# def chunkstring(string, length):
+#     return (string[0+i:length+i] for i in range(0, len(string), length))
 
 @bot.tree.command(name="chat", description="Answers questions about The Elder Scrolls Online.")
 @app_commands.describe(message="The question or command to send the chatbot")
+#@discord.ext.commands.max_concurrency(number = 1, per = BucketType.user, wait=True)
 async def chat(interaction: discord.Interaction, message: str):
     for entitlement in interaction.entitlements:
         if (entitlement.sku_id == 1274410251608657982 or interaction.guild_id == 754463742246387732 or interaction.guild.owner_id == 414265811713130496 ):
@@ -87,9 +90,9 @@ async def chat(interaction: discord.Interaction, message: str):
     #need to defer and use followup instead.
     await interaction.response.defer()
     try:
-        response = augur.invoke_llm(message)
-        for i in chunkstring(response,2000):
-            await interaction.followup.send(i)
+        await augur.invoke_llm(message, interaction)
+        # for i in chunkstring(response,2000):
+        #      await interaction.followup.send(i)
     except:
         await interaction.followup.send("The Augur isn't feeling well and an error has occured. Please try sending your message again")
 
