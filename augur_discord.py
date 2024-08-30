@@ -8,6 +8,8 @@ from discord.ui import Button
 from discord import ButtonStyle
 from discord.ext.commands import BucketType
 import asyncio
+import sqlite3
+from contextlib import closing
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
@@ -45,6 +47,56 @@ async def on_guild_join(guild):
    synced = await bot.tree.sync(guild=guild)
    print(f"Synced {len(synced)} commands to guild")
 
+@bot.event
+async def on_entitlement_create(entitlement: discord.Entitlement):
+    guild_id = entitlement.guild_id
+    sku_id = entitlement.sku_id
+
+    match sku_id:
+        #monthly sub
+        case 1274410251608657982:
+            print(f"A new guild: {guild_id} has subscribed!")
+            new_queries_available = 250
+            with closing(sqlite3.connect("augur.db")) as connection:
+                with closing(connection.cursor()) as cursor:
+                    cursor.execute("INSERT INTO entitlement VALUES (?, ?)",
+                                  (guild_id, new_queries_available)
+                    )
+                connection.commit()
+        #currently consumables only work per user, not per guild like the subscription
+        #add queries purchase
+        # case 1279144574987796513:
+        #     renewed_queries_available = 250
+        #     with closing(sqlite3.connect("augur.db")) as connection:
+        #         with closing(connection.cursor()) as cursor:
+        #             previous_queries_available = cursor.execute("SELECT queries_available FROM entitlement where guild_id = ?",
+        #                                                         (guild_id,)).fetchall()[0][0]
+        #             new_queries_available = previous_queries_available + renewed_queries_available
+        #             cursor.execute(    "UPDATE entitlement SET queries_available = ? WHERE guild_id = ?",
+        #                                        (new_queries_available, guild_id)
+        #             )
+        #         connection.commit()
+        #     await entitlement.consume()
+                    
+@bot.event
+async def on_entitlement_update(entitlement: discord.Entitlement):
+    guild_id = entitlement.guild_id
+    sku_id = entitlement.sku_id
+
+    match sku_id:
+        #monthly sub
+        case 1274410251608657982:
+            renewed_queries_available = 250
+            with closing(sqlite3.connect("augur.db")) as connection:
+                with closing(connection.cursor()) as cursor:
+                    previous_queries_available = cursor.execute("SELECT queries_available FROM entitlement where guild_id = ?",
+                                                                (guild_id,)).fetchall()[0][0]
+                    new_queries_available = previous_queries_available + renewed_queries_available
+                    cursor.execute(    "UPDATE entitlement SET queries_available = ? WHERE guild_id = ?",
+                                               (new_queries_available, guild_id)
+                    )
+                connection.commit()
+
 @bot.tree.command(name="help", description="Describes what The Augur is and how to use it.")  
 async def help(interaction: discord.Interaction):
     help_text = "The Augur is an AI powered chatbot designed to answer user questions about " \
@@ -75,14 +127,33 @@ async def help(interaction: discord.Interaction):
 #@discord.ext.commands.max_concurrency(number = 1, per = BucketType.user, wait=True)
 async def chat(interaction: discord.Interaction, message: str):
     for entitlement in interaction.entitlements:
-        if (entitlement.sku_id == 1274410251608657982 or interaction.guild_id == 754463742246387732 or interaction.guild.owner_id == 414265811713130496 ):
+        #user is either owner or in "free" guilds
+        if (interaction.guild_id == 754463742246387732 or interaction.guild.owner_id == 414265811713130496 ):
             break
+        #user is in a guild with a premium subscription
+        elif (entitlement.sku_id == 1274410251608657982):
+            with closing(sqlite3.connect("augur.db")) as connection:
+                with closing(connection.cursor()) as cursor:
+                    previous_queries_available = cursor.execute("SELECT queries_available FROM entitlement where guild_id = ?",
+                                                                (interaction.guild_id,)).fetchall()[0][0]
+            #check to see if guild has queries available
+            if previous_queries_available > 0:
+                #subtract a query from the guild's current allotment
+                new_queries_available = previous_queries_available - 1
+                with closing(sqlite3.connect("augur.db")) as connection:
+                    with closing(connection.cursor()) as cursor:               
+                        cursor.execute(    "UPDATE entitlement SET queries_available = ? WHERE guild_id = ?",
+                                               (new_queries_available, interaction.guild_id)
+                              )
+                    connection.commit()
+                break
         else:
           button = Button(style=ButtonStyle.premium, sku_id=1274410251608657982)  
           buttonview = discord.ui.View()
           buttonview.add_item(button)
           await interaction.response.send_message(content="This command is only available with a premium subscription!", 
                                                   view=buttonview)
+          return
           
     print("invoking llm...")
     #await interaction.response.send_message(response)
