@@ -51,6 +51,7 @@ async def on_guild_join(guild):
 async def on_entitlement_create(entitlement: discord.Entitlement):
     guild_id = entitlement.guild_id
     sku_id = entitlement.sku_id
+    user_id = entitlement.user_id
 
     match sku_id:
         #monthly sub
@@ -59,24 +60,29 @@ async def on_entitlement_create(entitlement: discord.Entitlement):
             new_queries_available = 250
             with closing(sqlite3.connect("augur.db")) as connection:
                 with closing(connection.cursor()) as cursor:
-                    cursor.execute("INSERT INTO entitlement VALUES (?, ?)",
+                    cursor.execute("INSERT INTO guild_entitlement VALUES (?, ?)",
                                   (guild_id, new_queries_available)
                     )
                 connection.commit()
         #currently consumables only work per user, not per guild like the subscription
         #add queries purchase
-        # case 1279144574987796513:
-        #     renewed_queries_available = 250
-        #     with closing(sqlite3.connect("augur.db")) as connection:
-        #         with closing(connection.cursor()) as cursor:
-        #             previous_queries_available = cursor.execute("SELECT queries_available FROM entitlement where guild_id = ?",
-        #                                                         (guild_id,)).fetchall()[0][0]
-        #             new_queries_available = previous_queries_available + renewed_queries_available
-        #             cursor.execute(    "UPDATE entitlement SET queries_available = ? WHERE guild_id = ?",
-        #                                        (new_queries_available, guild_id)
-        #             )
-        #         connection.commit()
-        #     await entitlement.consume()
+        case 1279144574987796513:
+            renewed_queries_available = 50
+            with closing(sqlite3.connect("augur.db")) as connection:
+                with closing(connection.cursor()) as cursor:
+                    user_entry = cursor.execute("SELECT queries_available FROM user_entitlement where user_id = ?",
+                                                                (user_id,)).fetchall()
+                    if user_entry != []:
+                        previous_queries_available = user_entry[0][0]
+                        new_queries_available = previous_queries_available + renewed_queries_available
+                        cursor.execute(    "UPDATE user_entitlement SET queries_available = ? WHERE user_id = ?",
+                                               (new_queries_available, user_id))
+                    else:
+                        cursor.execute("INSERT INTO user_entitlement VALUES (?, ?)",
+                                  (user_id, renewed_queries_available))
+
+                connection.commit()
+            await entitlement.consume()
                     
 @bot.event
 async def on_entitlement_update(entitlement: discord.Entitlement):
@@ -89,10 +95,10 @@ async def on_entitlement_update(entitlement: discord.Entitlement):
             renewed_queries_available = 250
             with closing(sqlite3.connect("augur.db")) as connection:
                 with closing(connection.cursor()) as cursor:
-                    previous_queries_available = cursor.execute("SELECT queries_available FROM entitlement where guild_id = ?",
+                    previous_queries_available = cursor.execute("SELECT queries_available FROM guild_entitlement where guild_id = ?",
                                                                 (guild_id,)).fetchall()[0][0]
                     new_queries_available = previous_queries_available + renewed_queries_available
-                    cursor.execute(    "UPDATE entitlement SET queries_available = ? WHERE guild_id = ?",
+                    cursor.execute(    "UPDATE guild_entitlement SET queries_available = ? WHERE guild_id = ?",
                                                (new_queries_available, guild_id)
                     )
                 connection.commit()
@@ -126,45 +132,73 @@ async def help(interaction: discord.Interaction):
 @app_commands.describe(message="The question or command to send the chatbot")
 #@discord.ext.commands.max_concurrency(number = 1, per = BucketType.user, wait=True)
 async def chat(interaction: discord.Interaction, message: str):
-    for entitlement in interaction.entitlements:
-        #user is either owner or in "free" guilds
-        if (interaction.guild_id == 754463742246387732 or interaction.guild.owner_id == 414265811713130496 ):
-            break
-        #user is in a guild with a premium subscription
-        elif (entitlement.sku_id == 1274410251608657982):
+    entitlements_sku_ids = []
+    for entitlement in interaction.entitlements: entitlements_sku_ids.append(entitlement.sku_id)
+    #user is in "free" guilds or is the owner
+    if (interaction.guild_id == 754463742246387732 or interaction.guild.owner_id == 414265811713130496 ):
+        await augur.invoke_llm(message, interaction)    
+    #user is in a guild with a premium subscription
+    elif (1274410251608657982 in entitlements_sku_ids):
+        with closing(sqlite3.connect("augur.db")) as connection:
+            with closing(connection.cursor()) as cursor:
+                previous_queries_available = cursor.execute("SELECT queries_available FROM guild_entitlement where guild_id = ?",
+                                                            (interaction.guild_id,)).fetchall()[0][0]
+        #check to see if guild has queries available
+        if previous_queries_available > 0:
+            #subtract a query from the guild's current allotment
+            new_queries_available = previous_queries_available - 1
             with closing(sqlite3.connect("augur.db")) as connection:
-                with closing(connection.cursor()) as cursor:
-                    previous_queries_available = cursor.execute("SELECT queries_available FROM entitlement where guild_id = ?",
-                                                                (interaction.guild_id,)).fetchall()[0][0]
-            #check to see if guild has queries available
-            if previous_queries_available > 0:
-                #subtract a query from the guild's current allotment
-                new_queries_available = previous_queries_available - 1
+                with closing(connection.cursor()) as cursor:               
+                    cursor.execute(    "UPDATE guild_entitlement SET queries_available = ? WHERE guild_id = ?",
+                                            (new_queries_available, interaction.guild_id))
+                connection.commit()
+            await augur.invoke_llm(message, interaction)
+        elif previous_queries_available <= 0:
+            with closing(sqlite3.connect("augur.db")) as connection:
+                with closing(connection.cursor()) as cursor: 
+                    user_info = cursor.execute("SELECT queries_available FROM user_entitlement where user_id = ?",
+                                                            (interaction.user.id,)).fetchall()
+            #user has an entry
+            if user_info != []:
+                previous_user_queries_available =  user_info[0][0]
+            #user has no entry
+            else: 
+                previous_user_queries_available = 0
+            if previous_user_queries_available > 0:
+                new_user_queries_available = previous_user_queries_available - 1
                 with closing(sqlite3.connect("augur.db")) as connection:
                     with closing(connection.cursor()) as cursor:               
-                        cursor.execute(    "UPDATE entitlement SET queries_available = ? WHERE guild_id = ?",
-                                               (new_queries_available, interaction.guild_id)
-                              )
+                        cursor.execute(    "UPDATE user_entitlement SET queries_available = ? WHERE user_id = ?",
+                                            (new_user_queries_available, interaction.user.id)
+                            )
                     connection.commit()
-                break
-        else:
-          button = Button(style=ButtonStyle.premium, sku_id=1274410251608657982)  
-          buttonview = discord.ui.View()
-          buttonview.add_item(button)
-          await interaction.response.send_message(content="This command is only available with a premium subscription!", 
-                                                  view=buttonview)
-          return
+                await augur.invoke_llm(message, interaction)
+            elif previous_user_queries_available <= 0:
+                button = Button(style=ButtonStyle.red, sku_id=1279144574987796513)  
+                buttonview = discord.ui.View()
+                buttonview.add_item(button)
+                await interaction.response.send_message(content="You and your guild have run out of queries! Either wait for the premium subscription to renew or buy more personal queries!", 
+                                                view=buttonview)
+                return
+    #guild must subscribe
+    else:
+        button = Button(style=ButtonStyle.premium, sku_id=1274410251608657982)  
+        buttonview = discord.ui.View()
+        buttonview.add_item(button)
+        await interaction.response.send_message(content="This command is only available with a premium subscription!", 
+                                                view=buttonview)
+        return
           
-    print("invoking llm...")
-    #await interaction.response.send_message(response)
-    #invoking the llm takes too long at this point (beyond the 3 second slash command window)
-    #need to defer and use followup instead.
-    await interaction.response.defer()
-    try:
-        await augur.invoke_llm(message, interaction)
-        # for i in chunkstring(response,2000):
-        #      await interaction.followup.send(i)
-    except:
-        await interaction.followup.send("The Augur isn't feeling well and an error has occured. Please try sending your message again")
+    # print("invoking llm...")
+    # #await interaction.response.send_message(response)
+    # #invoking the llm takes too long at this point (beyond the 3 second slash command window)
+    # #need to defer and use followup instead.
+    # await interaction.response.defer()
+    # try:
+    #     await augur.invoke_llm(message, interaction)
+    #     # for i in chunkstring(response,2000):
+#     #      await interaction.followup.send(i)
+    # except:
+    #     await interaction.followup.send("The Augur isn't feeling well and an error has occured. Please try sending your message again")
 
 bot.run(TOKEN)

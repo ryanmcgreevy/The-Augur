@@ -123,9 +123,18 @@ class Augur:
         return (string[0+i:length+i] for i in range(0, len(string), length))
 
     async def invoke_llm(self, user_input, interaction: discord.Interaction):
-        response = await self.retrieval_chain.ainvoke({"input": user_input})
-        answer = response.get('answer')
-        for i in self.chunkstring(answer,2000):
-            await interaction.followup.send(i)
+        print("invoking llm...")
+    #await interaction.response.send_message(response)
+    #invoking the llm takes too long at this point (beyond the 3 second slash command window)
+    #need to defer and use followup instead.
+        await interaction.response.defer()
+        try:
+            response = await self.retrieval_chain.ainvoke({"input": user_input})
+            answer = response.get('answer')
+            for i in self.chunkstring(answer,2000):
+                await interaction.followup.send(i)
+
+        except:
+            await interaction.followup.send("The Augur isn't feeling well and an error has occured. Please try sending your message again")
 
 
