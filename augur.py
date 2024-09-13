@@ -139,7 +139,7 @@ class Augur:
         try:
             response = await self.retrieval_chain.ainvoke({"input": user_input})
             #uncomment for debugging the context that is being retrieved and sent to the llm
-            print(response.get('context'))
+            #print(response.get('context'))
             answer = response.get('answer')
             for i in self.chunkstring(answer,2000):
                 await interaction.followup.send(i)
