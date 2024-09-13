@@ -21,7 +21,7 @@ import urllib.request
 import requests
 from bs4 import BeautifulSoup
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
+from langchain.retrievers import EnsembleRetriever
 import discord
 
 
@@ -62,6 +62,14 @@ class Augur:
         #search_kwargs={"lambda_mult":0.75, "k":4},
         #parent_splitter=parent_splitter,
         )
+
+        self.otherretriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.5, "k":6})
+
+        # initialize the ensemble retriever
+        self.ensemble_retriever = EnsembleRetriever(
+            retrievers=[self.retriever, self.otherretriever], weights=[0.5, 0.5]
+        )
+
         #store = InMemoryStore()
         # self.retriever = ParentDocumentRetriever(
         #     vectorstore=self.vectorstore,
@@ -77,7 +85,7 @@ class Augur:
         Question: {input}""")
 
         document_chain = create_stuff_documents_chain(self.llm, self.prompt)
-        self.retrieval_chain = create_retrieval_chain(self.retriever, document_chain)
+        self.retrieval_chain = create_retrieval_chain(self.ensemble_retriever, document_chain)
         
 
     # def scrape_and_store(self):
@@ -130,6 +138,8 @@ class Augur:
         await interaction.response.defer()
         try:
             response = await self.retrieval_chain.ainvoke({"input": user_input})
+            #uncomment for debugging the context that is being retrieved and sent to the llm
+            print(response.get('context'))
             answer = response.get('answer')
             for i in self.chunkstring(answer,2000):
                 await interaction.followup.send(i)
