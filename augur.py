@@ -41,7 +41,7 @@ class Augur:
         #os.environ["OPENAI_API_KEY"] = getpass.getpass()
 
         #llm = ChatOpenAI(model="gpt-3.5-turbo-0125")
-        self.llm = ChatOpenAI(model="gpt-4o-mini")
+        self.llm = ChatOpenAI(model="gpt-4o")
         self.embeddings=OpenAIEmbeddings()
 
         child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
@@ -59,11 +59,11 @@ class Augur:
         docstore=store,
         child_splitter=child_splitter,
         #search_type="mmr", 
-        #search_kwargs={"lambda_mult":0.75, "k":4},
-        #parent_splitter=parent_splitter,
+        #search_kwargs= {"lambda_mult":.5, "k":6},
+        parent_splitter=parent_splitter,
         )
 
-        self.otherretriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.5, "k":6})
+        self.otherretriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":.5, "k":6})
 
         # initialize the ensemble retriever
         self.ensemble_retriever = EnsembleRetriever(
@@ -76,7 +76,7 @@ class Augur:
         #     docstore=store,
         #     child_splitter=child_splitter,
         # )
-        self.prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly member of the guild. Answer with as much specific detail as possible, but only if you are confident in the answer. Answer the following question based only on the provided context:
+        self.prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly member of the guild. Answer with as much specific detail as possible. Answer the following question based only on the provided context:
 
         <context>
         {context}
@@ -139,7 +139,8 @@ class Augur:
         try:
             response = await self.retrieval_chain.ainvoke({"input": user_input})
             #uncomment for debugging the context that is being retrieved and sent to the llm
-            #print(response.get('context'))
+            print(response.get('context'))
+
             answer = response.get('answer')
             for i in self.chunkstring(answer,2000):
                 await interaction.followup.send(i)
