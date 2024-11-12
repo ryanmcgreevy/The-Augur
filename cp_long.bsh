@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for f in context_files_clean/uesp_lore/*; do rm "$f"; done
+for f in context_files_clean/uesp_online/*; do rm "$f"; done
+       	
+for f in xml_dump/*Lore:*; do cp "$f" context_files_clean/uesp_lore/; done
+for f in xml_dump/*Online:*; do cp "$f" context_files_clean/uesp_online/; done
