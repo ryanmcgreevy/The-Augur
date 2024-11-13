@@ -50,11 +50,11 @@ def scrape_and_store(name,mode):
         loader = TextLoader(name)
         docs = loader.load()
     print(len(docs))
-    #chunk_size = 1000
-    #chunk_overlap = 200
-    #text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-    #splits = text_splitter.split_documents(docs)
-    #vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, persist_directory="./chroma_db")
+    # chunk_size = 1000
+    # chunk_overlap = 200
+    # text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    # splits = text_splitter.split_documents(docs)
+    # vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, persist_directory="./chroma_db")
 
     fs = LocalFileStore("./store_location")
     store = create_kv_docstore(fs)
@@ -65,8 +65,8 @@ def scrape_and_store(name,mode):
     retriever = ParentDocumentRetriever(
         vectorstore=vectorstore,
         docstore=store,
-        child_splitter=child_splitter,
-        #parent_splitter=parent_splitter,
+        #child_splitter=child_splitter,
+        parent_splitter=parent_splitter,
     )
     def batch_process(documents_arr, batch_size, process_function):
         for i in range(0, len(documents_arr), batch_size):
@@ -84,7 +84,7 @@ def scrape_and_store(name,mode):
     batch_process(docs, batch_size, add_to_chroma_database)
 
 
-    #retriever.add_documents(docs, ids=None)
+    retriever.add_documents(docs, ids=None)
 
 parser = argparse.ArgumentParser("vectorstore")
 parser.add_argument("path", help="Path of directory (for dir mode) or filename (for file mode).", type=str)

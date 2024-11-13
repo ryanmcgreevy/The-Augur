@@ -60,10 +60,11 @@ class Augur:
         child_splitter=child_splitter,
         #search_type="mmr", 
         #search_kwargs= {"lambda_mult":.5, "k":6},
-        parent_splitter=parent_splitter,
+        #parent_splitter=parent_splitter,
         )
 
-        self.otherretriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":.5, "k":6})
+        self.oldvectorstore = Chroma(persist_directory="chroma_db", embedding_function=self.embeddings)
+        self.otherretriever = self.oldvectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":.5, "k":6})
 
         # initialize the ensemble retriever
         self.ensemble_retriever = EnsembleRetriever(
