@@ -77,7 +77,7 @@ class Augur:
         #     docstore=store,
         #     child_splitter=child_splitter,
         # )
-        self.prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly member of the guild. Answer with as much specific detail as possible. Answer the following question based only on the provided context:
+        self.prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly member of the guild. Answer with as much specific detail as possible. Answer the following question based only on the provided context and use the specific wording of the context as much as possible:
 
         <context>
         {context}
