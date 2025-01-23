@@ -19,7 +19,7 @@ from langchain_community.document_loaders import UnstructuredFileLoader
 from langchain_community.document_loaders import TextLoader
 import urllib.request
 import requests
-from bs4 import BeautifulSoup
+#from bs4 import BeautifulSoup
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.retrievers import EnsembleRetriever
 import discord
@@ -53,7 +53,7 @@ class Augur:
         parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
         child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
 
-        self.vectorstore = Chroma(collection_name="split_parents", embedding_function=self.embeddings, persist_directory="./db")
+        self.vectorstore = Chroma(collection_name="split_children", embedding_function=self.embeddings, persist_directory="./db")
         self.retriever = ParentDocumentRetriever(
         vectorstore=self.vectorstore,
         docstore=store,
