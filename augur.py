@@ -40,7 +40,7 @@ class Augur:
         #For now, we are using the environment variable set by our bash profile
         #os.environ["OPENAI_API_KEY"] = getpass.getpass()
 
-        #self.llm = ChatOpenAI(model="gpt-4o-mini")
+        self.llm = ChatOpenAI(model="gpt-4o-mini")
         self.embeddings=OpenAIEmbeddings()
 
         child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
