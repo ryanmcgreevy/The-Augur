@@ -30,18 +30,17 @@ class Augur:
     def __init__(self) -> None:
         
         #for offline llm
-        #from langchain_community.llms import Ollama
+        #from langchain_ollama.llms import OllamaLLM
         #from langchain_community.embeddings import OllamaEmbeddings
         #for offline llm
-        #llm = Ollama(model="llama3")
+        #self.llm = OllamaLLM(model="llama3.3")
         #embeddings = OllamaEmbeddings()
 
         #Uncomment if you want to pass the API key every time. You can also set it directly here.
         #For now, we are using the environment variable set by our bash profile
         #os.environ["OPENAI_API_KEY"] = getpass.getpass()
 
-        #llm = ChatOpenAI(model="gpt-3.5-turbo-0125")
-        self.llm = ChatOpenAI(model="gpt-4o-mini")
+        #self.llm = ChatOpenAI(model="gpt-4o-mini")
         self.embeddings=OpenAIEmbeddings()
 
         child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
