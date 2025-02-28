@@ -24,7 +24,8 @@ import argparse
 
 def scrape_and_store(name,mode):
     embeddings=OpenAIEmbeddings()
-
+    #from langchain_ollama import OllamaEmbeddings
+    #embeddings = OllamaEmbeddings(model="llama3.2")
     # loader = WebBaseLoader(["https://sites.google.com/view/mh-guilds/guides-and-stuff/rules-policies", 
     #                     "https://sites.google.com/view/mh-guilds/welcome",
     #                     "https://sites.google.com/view/mh-guilds/guides/trading",
@@ -56,12 +57,12 @@ def scrape_and_store(name,mode):
     # splits = text_splitter.split_documents(docs)
     # vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, persist_directory="./chroma_db")
 
-    fs = LocalFileStore("./store_location")
+    fs = LocalFileStore("./store_location_test")
     store = create_kv_docstore(fs)
     parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
     child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
 
-    vectorstore = Chroma(collection_name="split_children", embedding_function=embeddings, persist_directory="./db")
+    vectorstore = Chroma(collection_name="split_children", embedding_function=embeddings, persist_directory="./db_test")
     retriever = ParentDocumentRetriever(
         vectorstore=vectorstore,
         docstore=store,
