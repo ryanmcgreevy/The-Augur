@@ -33,7 +33,7 @@ class Augur:
         #from langchain_ollama.llms import OllamaLLM
         #from langchain_community.embeddings import OllamaEmbeddings
         #for offline llm
-        #self.llm = OllamaLLM(model="llama3.3")
+        #self.llm = OllamaLLM(model="deepseek-r1")
         #embeddings = OllamaEmbeddings()
 
         #Uncomment if you want to pass the API key every time. You can also set it directly here.
@@ -62,13 +62,13 @@ class Augur:
         #parent_splitter=parent_splitter,
         )
 
-        self.oldvectorstore = Chroma(persist_directory="chroma_db", embedding_function=self.embeddings)
-        self.otherretriever = self.oldvectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":.5, "k":6})
+        #self.oldvectorstore = Chroma(persist_directory="chroma_db", embedding_function=self.embeddings)
+        #self.otherretriever = self.oldvectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":.5, "k":6})
 
-        # initialize the ensemble retriever
-        self.ensemble_retriever = EnsembleRetriever(
-            retrievers=[self.retriever, self.otherretriever], weights=[0.5, 0.5]
-        )
+        # # initialize the ensemble retriever
+        # self.ensemble_retriever = EnsembleRetriever(
+        #     retrievers=[self.retriever, self.otherretriever], weights=[0.5, 0.5]
+        # )
 
         #store = InMemoryStore()
         # self.retriever = ParentDocumentRetriever(
@@ -85,7 +85,7 @@ class Augur:
         Question: {input}""")
 
         document_chain = create_stuff_documents_chain(self.llm, self.prompt)
-        self.retrieval_chain = create_retrieval_chain(self.ensemble_retriever, document_chain)
+        self.retrieval_chain = create_retrieval_chain(self.retriever, document_chain)
         
 
     # def scrape_and_store(self):

@@ -62,7 +62,7 @@ def scrape_and_store(name,mode):
     parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
     child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
 
-    vectorstore = Chroma(collection_name="split_children", embedding_function=embeddings, persist_directory="./db_test")
+    vectorstore = Chroma(collection_name="split_children", embedding_function=embeddings, persist_directory="./db")
     retriever = ParentDocumentRetriever(
         vectorstore=vectorstore,
         docstore=store,
