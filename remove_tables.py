@@ -1,5 +1,7 @@
 import os
-dir = "test_table"
+import sys
+
+dir = sys.argv[1]
 for filename in os.listdir(dir):
    path = os.path.join(dir, filename)
    with open(path, 'r') as f:
