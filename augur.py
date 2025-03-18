@@ -23,18 +23,21 @@ import requests
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.retrievers import EnsembleRetriever
 import discord
-
+import aiofiles
+import asyncio
 
 class Augur:
 
     def __init__(self) -> None:
         
         #for offline llm
-        #from langchain_ollama.llms import OllamaLLM
-        #from langchain_community.embeddings import OllamaEmbeddings
+        from langchain_ollama.llms import OllamaLLM
+        from langchain_ollama import ChatOllama
+        from langchain_ollama import OllamaEmbeddings
         #for offline llm
-        #self.llm = OllamaLLM(model="deepseek-r1")
-        #embeddings = OllamaEmbeddings()
+        #self.llm = OllamaLLM(model="llama3.2")
+        #self.llm = ChatOllama(model="deepseek-r1")
+        #self.embeddings = OllamaEmbeddings(model="mxbai-embed-large")
 
         #Uncomment if you want to pass the API key every time. You can also set it directly here.
         #For now, we are using the environment variable set by our bash profile
@@ -43,32 +46,51 @@ class Augur:
         self.llm = ChatOpenAI(model="gpt-4o-mini")
         self.embeddings=OpenAIEmbeddings()
 
-        child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
+        #child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
 
-        #self.vectorstore = Chroma(persist_directory="chroma_db", embedding_function=self.embeddings)
+        #self.vectorstore = Chroma(persist_directory="db", embedding_function=self.embeddings)
+        #self.retriever = self.vectorstore.as_retriever(search_kwargs={"k":6})
         #self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.5, "k":6})
-        fs = LocalFileStore("./store_location")
+
+        # docs = []
+
+        # dloader = DirectoryLoader("context_files_clean/", glob="**/*.txt", loader_cls=TextLoader, use_multithreading=True)
+        # for tdoc in dloader.load(): docs.append(tdoc)
+
+        # dloader = DirectoryLoader("context_files_clean/", glob="**/*.md", use_multithreading=True)
+        # for tdoc in dloader.load(): docs.append(tdoc)
+
+        # from langchain_community.retrievers import BM25Retriever
+        # # initialize the bm25 retriever
+        # bm25_retriever = BM25Retriever.from_documents(docs)
+        # bm25_retriever.k = 6
+        
+        fs = LocalFileStore("./store_location_extract")
         store = create_kv_docstore(fs)
-        parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
+        #parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
         child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
 
-        self.vectorstore = Chroma(collection_name="split_children", embedding_function=self.embeddings, persist_directory="./db")
+        self.vectorstore = Chroma(collection_name="split_children", embedding_function=self.embeddings, persist_directory="./db_extract")
         self.retriever = ParentDocumentRetriever(
         vectorstore=self.vectorstore,
         docstore=store,
         child_splitter=child_splitter,
-        #search_type="mmr", 
+        #search_type="similarity_score_threshold", 
+        #search_kwargs= {"score_threshold":0.5, "k":6},
+        #search_type="mmr",
         #search_kwargs= {"lambda_mult":.5, "k":6},
+        search_kwargs= {"k":4},
         #parent_splitter=parent_splitter,
         )
 
-        #self.oldvectorstore = Chroma(persist_directory="chroma_db", embedding_function=self.embeddings)
-        #self.otherretriever = self.oldvectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":.5, "k":6})
-
+        self.oldvectorstore = Chroma(collection_name="split_children", persist_directory="./chroma_db", embedding_function=self.embeddings)
+        self.otherretriever = self.oldvectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.5, "k":6})
+        #self.otherretriever = self.oldvectorstore.as_retriever()
+        #self.otherretriever = self.oldvectorstore.as_retriever(search_type="similarity_score_threshold", search_kwargs= {"score_threshold":0.5, "k":3})
         # # initialize the ensemble retriever
-        # self.ensemble_retriever = EnsembleRetriever(
-        #     retrievers=[self.retriever, self.otherretriever], weights=[0.5, 0.5]
-        # )
+        self.ensemble_retriever = EnsembleRetriever(
+              retrievers=[self.retriever, self.otherretriever], weights=[0.5, 0.5]
+          )
 
         #store = InMemoryStore()
         # self.retriever = ParentDocumentRetriever(
@@ -76,6 +98,10 @@ class Augur:
         #     docstore=store,
         #     child_splitter=child_splitter,
         # )
+
+        self.extractvectorstore = Chroma(persist_directory="./db_extract", embedding_function=self.embeddings)
+        self.extractretriever = self.extractvectorstore.as_retriever(search_kwargs={"k":6})
+
         self.prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly member of the guild. Answer with as much specific detail as possible. Answer the following question based only on the provided context and use the specific wording of the context as much as possible:
 
         <context>
@@ -84,8 +110,20 @@ class Augur:
 
         Question: {input}""")
 
+        # from langchain.prompts import PromptTemplate
+        # self.prompt = PromptTemplate(
+        #     template="""You are an assistant for question-answering tasks.
+        #     Use the following context to answer the question.
+        #     If you don't know the answer, just say that you don't know.
+        #     Question: {question}
+        #     Context: {context}
+        #     Answer:
+        #     """,
+        #     input_variables=["question", "context"],
+        # )
+
         document_chain = create_stuff_documents_chain(self.llm, self.prompt)
-        self.retrieval_chain = create_retrieval_chain(self.retriever, document_chain)
+        self.retrieval_chain = create_retrieval_chain(self.extractretriever, document_chain)
         
 
     # def scrape_and_store(self):
@@ -129,9 +167,11 @@ class Augur:
     #Generators are more memory efficient than lists because they generator their elements as they are needed, not all at once, however they lack certain features like indexing.
     def chunkstring(self, string, length):
         return (string[0+i:length+i] for i in range(0, len(string), length))
+    
 
     async def invoke_llm(self, user_input, interaction: discord.Interaction):
         print("invoking llm...")
+
     #await interaction.response.send_message(response)
     #invoking the llm takes too long at this point (beyond the 3 second slash command window)
     #need to defer and use followup instead.
@@ -139,7 +179,9 @@ class Augur:
         try:
             response = await self.retrieval_chain.ainvoke({"input": user_input})
             #uncomment for debugging the context that is being retrieved and sent to the llm
-            #print(response.get('context'))
+            context = response.get('context')
+            print(context)
+
 
             answer = interaction.user.display_name + " said: " + "\"" + user_input + "\"" + '\n' + '\n' + response.get('answer')
             for i in self.chunkstring(answer,2000):

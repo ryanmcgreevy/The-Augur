@@ -12,6 +12,8 @@ from langchain_community.document_loaders import TextLoader
 from langchain.storage._lc_store import create_kv_docstore
 from langchain.retrievers import ParentDocumentRetriever
 from langchain.storage.file_system import LocalFileStore
+from langchain_community.document_loaders import UnstructuredHTMLLoader
+from langchain_community.document_loaders import BSHTMLLoader
 import argparse
 
 #from langchain_community.embeddings import OllamaEmbeddings
@@ -25,7 +27,7 @@ import argparse
 def scrape_and_store(name,mode):
     embeddings=OpenAIEmbeddings()
     #from langchain_ollama import OllamaEmbeddings
-    #embeddings = OllamaEmbeddings(model="llama3.2")
+    #embeddings = OllamaEmbeddings(model="mxbai-embed-large")
     # loader = WebBaseLoader(["https://sites.google.com/view/mh-guilds/guides-and-stuff/rules-policies", 
     #                     "https://sites.google.com/view/mh-guilds/welcome",
     #                     "https://sites.google.com/view/mh-guilds/guides/trading",
@@ -42,50 +44,59 @@ def scrape_and_store(name,mode):
     docs = []
 
     if mode == 'dir':
-        dloader = DirectoryLoader(name, glob="**/*.txt", loader_cls=TextLoader, use_multithreading=True)
-        for tdoc in dloader.load(): docs.append(tdoc)
+        # dloader = DirectoryLoader(name, glob="**/*.txt", loader_cls=TextLoader, use_multithreading=True)
+        # for tdoc in dloader.load(): docs.append(tdoc)
 
-        dloader = DirectoryLoader(name, glob="**/*.md", use_multithreading=True)
+        # dloader = DirectoryLoader(name, glob="**/*.md", use_multithreading=True)
+        # for tdoc in dloader.load(): docs.append(tdoc)
+
+        # dloader = DirectoryLoader(name, glob="**/*.html", use_multithreading=True)
+        # for tdoc in dloader.load(): docs.append(tdoc)
+
+        dloader = DirectoryLoader(name, glob="**/*", use_multithreading=True)
         for tdoc in dloader.load(): docs.append(tdoc)
     elif mode == 'file':
         loader = TextLoader(name)
+        #loader = BSHTMLLoader(name)
         docs = loader.load()
     print(len(docs))
-    # chunk_size = 1000
-    # chunk_overlap = 200
-    # text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-    # splits = text_splitter.split_documents(docs)
-    # vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, persist_directory="./chroma_db")
+    for doc in docs:
+        print(doc.metadata)
+    chunk_size = 1000
+    chunk_overlap = 200
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    splits = text_splitter.split_documents(docs)
+    vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, persist_directory="./db_extract")
 
-    fs = LocalFileStore("./store_location_test")
-    store = create_kv_docstore(fs)
-    parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
-    child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
+    # fs = LocalFileStore("./store_location_extract")
+    # store = create_kv_docstore(fs)
+    # parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
+    # child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
 
-    vectorstore = Chroma(collection_name="split_children", embedding_function=embeddings, persist_directory="./db")
-    retriever = ParentDocumentRetriever(
-        vectorstore=vectorstore,
-        docstore=store,
-        child_splitter=child_splitter,
-        #parent_splitter=parent_splitter,
-    )
-    def batch_process(documents_arr, batch_size, process_function):
-        for i in range(0, len(documents_arr), batch_size):
-            batch = documents_arr[i:i + batch_size]
-            process_function(batch)
+    # vectorstore = Chroma(collection_name="split_children", embedding_function=embeddings, persist_directory="./db_extract")
+    # retriever = ParentDocumentRetriever(
+    #     vectorstore=vectorstore,
+    #     docstore=store,
+    #     child_splitter=child_splitter,
+    #     #parent_splitter=parent_splitter,
+    # )
+    # def batch_process(documents_arr, batch_size, process_function):
+    #     for i in range(0, len(documents_arr), batch_size):
+    #         batch = documents_arr[i:i + batch_size]
+    #         process_function(batch)
 
-    def add_to_chroma_database(batch):
-        retriever.add_documents(documents=batch)
+    # def add_to_chroma_database(batch):
+    #     retriever.add_documents(documents=batch)
 
-    #limit is 41666, but because we are passing the child splitter to ParentDocumentRetriever,
-    #and not just splitting the docs and feeding them in ourselves, we need to make this batch size
-    #relatively small to make sure we don't exceed the limit as the retriever is splitting the doc input
-    batch_size = 50
+    # #limit is 41666, but because we are passing the child splitter to ParentDocumentRetriever,
+    # #and not just splitting the docs and feeding them in ourselves, we need to make this batch size
+    # #relatively small to make sure we don't exceed the limit as the retriever is splitting the doc input
+    # batch_size = 50
 
-    batch_process(docs, batch_size, add_to_chroma_database)
+    # batch_process(docs, batch_size, add_to_chroma_database)
 
 
-    retriever.add_documents(docs, ids=None)
+    # retriever.add_documents(docs, ids=None)
 
 parser = argparse.ArgumentParser("vectorstore")
 parser.add_argument("path", help="Path of directory (for dir mode) or filename (for file mode).", type=str)
