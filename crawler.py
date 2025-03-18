@@ -10,13 +10,15 @@ from crawl4ai.deep_crawling.filters import (
     DomainFilter,
     ContentTypeFilter
 )
+from crawl4ai.async_configs import BrowserConfig
+from crawl4ai.async_dispatcher import MemoryAdaptiveDispatcher
 
 async def main():
     # Create a chain of filters
     filter_chain = FilterChain([
         # Only follow URLs with specific patterns
         #URLPatternFilter(patterns=["*Online:*", "*Lore:*"]),
-        URLPatternFilter(patterns=["*Online:*"]),
+        URLPatternFilter(patterns=["*Lore:*"]),
         # Only crawl specific domains
         #DomainFilter(
         #    allowed_domains=["docs.example.com"],
@@ -26,6 +28,24 @@ async def main():
         # Only include specific content types
         ContentTypeFilter(allowed_types=["text/html"])
     ])
+    dispatcher = MemoryAdaptiveDispatcher(
+        memory_threshold_percent=90.0,  # Pause if memory exceeds this
+        check_interval=1.0,             # How often to check memory
+        max_session_permit=10,          # Maximum concurrent tasks
+        rate_limiter=RateLimiter(       # Optional rate limiting
+            base_delay=(5.0, 7.0),
+            max_delay=30.0,
+            max_retries=2
+            rate_limit_codes=[429, 503]  # Handle these HTTP status codes
+        )
+    )
+#    proxy_config = {
+#        "server": "atlanta.us.socks.nordhold.net:1080",
+#        "username": "",
+#        "password": ""
+#    }
+
+    #browser_config = BrowserConfig(proxy_config=proxy_config)
 
     # Configure a 1-level deep crawl
     config = CrawlerRunConfig(
@@ -34,6 +54,7 @@ async def main():
             include_external=False,
             filter_chain=filter_chain
         ),
+        check_robots_txt=True,  # Will check and respect robots.txt rules
         scraping_strategy=LXMLWebScrapingStrategy(),
         verbose=True,
         stream=True,
@@ -43,7 +64,7 @@ async def main():
     )
 
     async with AsyncWebCrawler() as crawler:
-        async for result in await crawler.arun("https://en.uesp.net/wiki/Online:Online", config=config):
+        async for result in await crawler.arun("https://en.uesp.net/wiki/Lore:Main_Page", config=config, dispatcher=dispatcher):
             process_result(result)
 
         #print(f"Crawled {len(results)} pages in total")
