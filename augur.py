@@ -47,12 +47,12 @@ class Augur:
 
         #self.vectorstore = Chroma(persist_directory="chroma_db", embedding_function=self.embeddings)
         #self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.5, "k":6})
-        fs = LocalFileStore("./store_location")
+        fs = LocalFileStore("./store_location_crawl")
         store = create_kv_docstore(fs)
         parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
         child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
 
-        self.vectorstore = Chroma(collection_name="split_children", embedding_function=self.embeddings, persist_directory="./db")
+        self.vectorstore = Chroma(collection_name="split_children", embedding_function=self.embeddings, persist_directory="./db_crawl")
         self.retriever = ParentDocumentRetriever(
         vectorstore=self.vectorstore,
         docstore=store,
@@ -139,7 +139,7 @@ class Augur:
         try:
             response = await self.retrieval_chain.ainvoke({"input": user_input})
             #uncomment for debugging the context that is being retrieved and sent to the llm
-            #print(response.get('context'))
+            print(response.get('context'))
 
             answer = interaction.user.display_name + " said: " + "\"" + user_input + "\"" + '\n' + '\n' + response.get('answer')
             for i in self.chunkstring(answer,2000):
