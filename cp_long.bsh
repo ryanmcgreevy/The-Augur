@@ -3,8 +3,7 @@
 for f in context_files_clean/uesp_lore/*; do rm "$f"; done
 for f in context_files_clean/uesp_online/*; do rm "$f"; done
        	
-for f in xml_dump/*Lore:*; do cp "$f" context_files_clean/uesp_lore/; done
-for f in xml_dump/*Online:*; do cp "$f" context_files_clean/uesp_online/; done
-
-#for f in html/uesp_online/*; do cp "$f" context_files_clean/uesp_online/; done
-#for f in html/uesp_lore/*; do cp "$f" context_files_clean/uesp_lore/; done
+#for f in xml_dump/*Lore:*; do cp "$f" context_files_clean/uesp_lore/; done
+#for f in xml_dump/*Online:*; do cp "$f" context_files_clean/uesp_online/; done
+for f in uesp_output2/*Lore:*; do cp "$f" context_files_clean/uesp_lore/; done
+for f in uesp_output2/*Online:*; do cp "$f" context_files_clean/uesp_online/; done

@@ -68,22 +68,22 @@ def scrape_and_store(name,mode):
     splits = text_splitter.split_documents(docs)
     vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, persist_directory="./db_extract")
 
-    # fs = LocalFileStore("./store_location_extract")
-    # store = create_kv_docstore(fs)
-    # parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
-    # child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
+    fs = LocalFileStore("./store_location_crawl")
+    store = create_kv_docstore(fs)
+    parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
+    child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
 
-    # vectorstore = Chroma(collection_name="split_children", embedding_function=embeddings, persist_directory="./db_extract")
-    # retriever = ParentDocumentRetriever(
-    #     vectorstore=vectorstore,
-    #     docstore=store,
-    #     child_splitter=child_splitter,
-    #     #parent_splitter=parent_splitter,
-    # )
-    # def batch_process(documents_arr, batch_size, process_function):
-    #     for i in range(0, len(documents_arr), batch_size):
-    #         batch = documents_arr[i:i + batch_size]
-    #         process_function(batch)
+    vectorstore = Chroma(collection_name="split_children", embedding_function=embeddings, persist_directory="./db_crawl")
+    retriever = ParentDocumentRetriever(
+        vectorstore=vectorstore,
+        docstore=store,
+        child_splitter=child_splitter,
+        #parent_splitter=parent_splitter,
+    )
+    def batch_process(documents_arr, batch_size, process_function):
+        for i in range(0, len(documents_arr), batch_size):
+            batch = documents_arr[i:i + batch_size]
+            process_function(batch)
 
     # def add_to_chroma_database(batch):
     #     retriever.add_documents(documents=batch)
