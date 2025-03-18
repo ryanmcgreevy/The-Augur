@@ -12,13 +12,14 @@ from crawl4ai.deep_crawling.filters import (
 )
 from crawl4ai.async_configs import BrowserConfig
 from crawl4ai.async_dispatcher import MemoryAdaptiveDispatcher
+from crawl4ai import RateLimiter
 
 async def main():
     # Create a chain of filters
     filter_chain = FilterChain([
         # Only follow URLs with specific patterns
         #URLPatternFilter(patterns=["*Online:*", "*Lore:*"]),
-        URLPatternFilter(patterns=["*Lore:*"]),
+        URLPatternFilter(patterns=["*Online:*"]),
         # Only crawl specific domains
         #DomainFilter(
         #    allowed_domains=["docs.example.com"],
@@ -35,7 +36,7 @@ async def main():
         rate_limiter=RateLimiter(       # Optional rate limiting
             base_delay=(5.0, 7.0),
             max_delay=30.0,
-            max_retries=2
+            max_retries=2,
             rate_limit_codes=[429, 503]  # Handle these HTTP status codes
         )
     )
@@ -64,7 +65,7 @@ async def main():
     )
 
     async with AsyncWebCrawler() as crawler:
-        async for result in await crawler.arun("https://en.uesp.net/wiki/Lore:Main_Page", config=config, dispatcher=dispatcher):
+        async for result in await crawler.arun("https://en.uesp.net/wiki/Online:Sets", config=config, dispatcher=dispatcher):
             process_result(result)
 
         #print(f"Crawled {len(results)} pages in total")
