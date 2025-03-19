@@ -47,12 +47,12 @@ class Augur:
 
         #self.vectorstore = Chroma(persist_directory="chroma_db", embedding_function=self.embeddings)
         #self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.5, "k":6})
-        fs = LocalFileStore("./store_location_crawl")
+        fs = LocalFileStore("./store_location")
         store = create_kv_docstore(fs)
         parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
         child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
 
-        self.vectorstore = Chroma(collection_name="split_children", embedding_function=self.embeddings, persist_directory="./db_crawl")
+        self.vectorstore = Chroma(collection_name="split_children", embedding_function=self.embeddings, persist_directory="./db")
         self.retriever = ParentDocumentRetriever(
         vectorstore=self.vectorstore,
         docstore=store,
@@ -62,13 +62,13 @@ class Augur:
         #parent_splitter=parent_splitter,
         )
 
-        #self.oldvectorstore = Chroma(persist_directory="chroma_db", embedding_function=self.embeddings)
-        #self.otherretriever = self.oldvectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":.5, "k":6})
+        self.oldvectorstore = Chroma(persist_directory="./db", embedding_function=self.embeddings)
+        self.otherretriever = self.oldvectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":.5, "k":6})
 
         # # initialize the ensemble retriever
-        # self.ensemble_retriever = EnsembleRetriever(
-        #     retrievers=[self.retriever, self.otherretriever], weights=[0.5, 0.5]
-        # )
+        self.ensemble_retriever = EnsembleRetriever(
+             retrievers=[self.retriever, self.otherretriever], weights=[0.5, 0.5]
+         )
 
         #store = InMemoryStore()
         # self.retriever = ParentDocumentRetriever(
@@ -85,7 +85,7 @@ class Augur:
         Question: {input}""")
 
         document_chain = create_stuff_documents_chain(self.llm, self.prompt)
-        self.retrieval_chain = create_retrieval_chain(self.retriever, document_chain)
+        self.retrieval_chain = create_retrieval_chain(self.ensemble_retriever, document_chain)
         
 
     # def scrape_and_store(self):
