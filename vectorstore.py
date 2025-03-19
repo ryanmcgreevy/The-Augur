@@ -60,20 +60,20 @@ def scrape_and_store(name,mode):
         #loader = BSHTMLLoader(name)
         docs = loader.load()
     print(len(docs))
-    for doc in docs:
-        print(doc.metadata)
-    chunk_size = 1000
-    chunk_overlap = 200
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-    splits = text_splitter.split_documents(docs)
-    vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, persist_directory="./db_extract")
+    #for doc in docs:
+        #print(doc.metadata)
+    #chunk_size = 1000
+    #chunk_overlap = 200
+    #text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    #splits = text_splitter.split_documents(docs)
+    #vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, persist_directory="./db_extract")
 
-    fs = LocalFileStore("./store_location_crawl")
+    fs = LocalFileStore("./store_location")
     store = create_kv_docstore(fs)
     parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
     child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
 
-    vectorstore = Chroma(collection_name="split_children", embedding_function=embeddings, persist_directory="./db_crawl")
+    vectorstore = Chroma(collection_name="split_children", embedding_function=embeddings, persist_directory="./db")
     retriever = ParentDocumentRetriever(
         vectorstore=vectorstore,
         docstore=store,
@@ -91,7 +91,7 @@ def scrape_and_store(name,mode):
     # #limit is 41666, but because we are passing the child splitter to ParentDocumentRetriever,
     # #and not just splitting the docs and feeding them in ourselves, we need to make this batch size
     # #relatively small to make sure we don't exceed the limit as the retriever is splitting the doc input
-    # batch_size = 50
+    batch_size = 50
 
     # batch_process(docs, batch_size, add_to_chroma_database)
 
