@@ -141,7 +141,7 @@ class Augur:
             #uncomment for debugging the context that is being retrieved and sent to the llm
             print(response.get('context'))
 
-            answer = interaction.user.display_name + " said: " + "\"" + user_input + "\"" + '\n' + '\n' + response.get('answer')
+            answer = interaction.user.display_name + " said: " + "\"" + user_input + "\"" + '\n' + '\n' + response.get('answer') + '\n\n' + 'Be warned that sometimes I have no idea what I\'m talking about, so it might be a good idea to get a second opinion elsewhere... '
             for i in self.chunkstring(answer,2000):
                 await interaction.followup.send(i)
 
