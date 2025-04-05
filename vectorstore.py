@@ -68,12 +68,12 @@ def scrape_and_store(name,mode):
     #splits = text_splitter.split_documents(docs)
     #vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, persist_directory="./db_extract")
 
-    fs = LocalFileStore("./store_location_a1")
+    fs = LocalFileStore("./store_location")
     store = create_kv_docstore(fs)
     parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
     child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
 
-    vectorstore = Chroma(collection_name="split_children", embedding_function=embeddings, persist_directory="./db_a1")
+    vectorstore = Chroma(collection_name="split_children", embedding_function=embeddings, persist_directory="./db")
     retriever = ParentDocumentRetriever(
         vectorstore=vectorstore,
         docstore=store,

@@ -47,7 +47,7 @@ class Augur:
 
         #self.vectorstore = Chroma(persist_directory="chroma_db", embedding_function=self.embeddings)
         #self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.5, "k":6})
-        fs = LocalFileStore("./store_location_a1")
+        fs = LocalFileStore("./store_location")
         store = create_kv_docstore(fs)
         parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
         child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
@@ -62,7 +62,7 @@ class Augur:
         #parent_splitter=parent_splitter,
         )
 
-        self.oldvectorstore = Chroma(persist_directory="./db_a1", embedding_function=self.embeddings)
+        self.oldvectorstore = Chroma(persist_directory="./db", embedding_function=self.embeddings)
         self.otherretriever = self.oldvectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":.5, "k":6})
 
         # # initialize the ensemble retriever
