@@ -52,7 +52,7 @@ class Augur:
         parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
         child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
 
-        self.vectorstore = Chroma(collection_name="split_children", embedding_function=self.embeddings, persist_directory="./db_a1")
+        self.vectorstore = Chroma(collection_name="split_children", embedding_function=self.embeddings, persist_directory="./db")
         self.retriever = ParentDocumentRetriever(
         vectorstore=self.vectorstore,
         docstore=store,

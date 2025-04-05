@@ -13,6 +13,7 @@ from crawl4ai.deep_crawling.filters import (
 from crawl4ai.async_configs import BrowserConfig
 from crawl4ai.async_dispatcher import MemoryAdaptiveDispatcher
 from crawl4ai import RateLimiter
+import subprocess
 
 async def main():
     # Create a chain of filters
@@ -97,5 +98,9 @@ def process_result(result):
                     content = md_res.raw_markdown
                     if content != None:
                         f.write(content)
+                        f.close()
+                #cwd = os.getcwd()
+                #filename = os.path.join(cwd, filename)
+                subprocess.run(['python3', 'vectorstore.py', filename, "file"])
 if __name__ == "__main__":
     asyncio.run(main())
