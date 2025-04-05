@@ -33,7 +33,7 @@ class Augur:
         #from langchain_ollama.llms import OllamaLLM
         #from langchain_community.embeddings import OllamaEmbeddings
         #for offline llm
-        #self.llm = OllamaLLM(model="deepseek-r1")
+        #self.llm = OllamaLLM(model="llama3.2")
         #embeddings = OllamaEmbeddings()
 
         #Uncomment if you want to pass the API key every time. You can also set it directly here.
@@ -47,12 +47,12 @@ class Augur:
 
         #self.vectorstore = Chroma(persist_directory="chroma_db", embedding_function=self.embeddings)
         #self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":0.5, "k":6})
-        fs = LocalFileStore("./store_location")
+        fs = LocalFileStore("./store_location_a1")
         store = create_kv_docstore(fs)
         parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
         child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
 
-        self.vectorstore = Chroma(collection_name="split_children", embedding_function=self.embeddings, persist_directory="./db")
+        self.vectorstore = Chroma(collection_name="split_children", embedding_function=self.embeddings, persist_directory="./db_a1")
         self.retriever = ParentDocumentRetriever(
         vectorstore=self.vectorstore,
         docstore=store,
@@ -62,7 +62,7 @@ class Augur:
         #parent_splitter=parent_splitter,
         )
 
-        self.oldvectorstore = Chroma(persist_directory="./db", embedding_function=self.embeddings)
+        self.oldvectorstore = Chroma(persist_directory="./db_a1", embedding_function=self.embeddings)
         self.otherretriever = self.oldvectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":.5, "k":6})
 
         # # initialize the ensemble retriever
