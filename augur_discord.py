@@ -119,14 +119,27 @@ async def help(interaction: discord.Interaction):
 #         await interaction.followup.send(ephemeral=True, content="Source data successfully scraped.")
 #     else:
 #         await interaction.response.send_message(ephemeral=True, content="You are not authorized to use this command.")
-    
 
 #This function returns a generator, using a generator comprehension. 
 #The generator returns the string sliced, from 0 + a multiple of the length of the chunks, to the length of the chunks + a multiple of the length of the chunks.
 #You can iterate over the generator like a list, tuple or string - for i in chunkstring(s,n): , or convert it into a list (for instance) with list(generator). 
 #Generators are more memory efficient than lists because they generator their elements as they are needed, not all at once, however they lack certain features like indexing.
-# def chunkstring(string, length):
-#     return (string[0+i:length+i] for i in range(0, len(string), length))
+def chunkstring(string, length):
+    return (string[0+i:length+i] for i in range(0, len(string), length))
+
+async def invoke_augur(user_input, interaction: discord.Interaction):
+    #await interaction.response.send_message(response)
+    #invoking the llm takes too long at this point (beyond the 3 second slash command window)
+    #need to defer and use followup instead.
+    await interaction.response.defer()
+    try:
+        response = await augur.invoke_llm(user_input)
+        answer = interaction.user.display_name + " said: " + "\"" + user_input + "\"" + '\n' + '\n' + response.get('answer') + '\n\n' + 'Be warned that sometimes I have no idea what I\'m talking about, so it might be a good idea to get a second opinion elsewhere... '
+        for i in chunkstring(answer,2000):
+            await interaction.followup.send(i)
+
+    except:
+        await interaction.followup.send("The Augur isn't feeling well and an error has occured. Please try sending your message again")
 
 @bot.tree.command(name="chat", description="Answers questions about The Elder Scrolls Online.")
 @app_commands.describe(message="The question or command to send the chatbot")
@@ -136,7 +149,7 @@ async def chat(interaction: discord.Interaction, message: str):
     for entitlement in interaction.entitlements: entitlements_sku_ids.append(entitlement.sku_id)
     #user is in "free" guilds or is the owner
     if (interaction.guild_id == 754463742246387732 or interaction.guild.owner_id == 414265811713130496 ):
-        await augur.invoke_llm(message, interaction)    
+        await invoke_augur(message, interaction)    
     #user is in a guild with a premium subscription
     elif (1274410251608657982 in entitlements_sku_ids):
         with closing(sqlite3.connect("augur.db")) as connection:
@@ -152,7 +165,7 @@ async def chat(interaction: discord.Interaction, message: str):
                     cursor.execute(    "UPDATE guild_entitlement SET queries_available = ? WHERE guild_id = ?",
                                             (new_queries_available, interaction.guild_id))
                 connection.commit()
-            await augur.invoke_llm(message, interaction)
+            await invoke_augur(message, interaction)
         elif previous_queries_available <= 0:
             with closing(sqlite3.connect("augur.db")) as connection:
                 with closing(connection.cursor()) as cursor: 
@@ -172,7 +185,7 @@ async def chat(interaction: discord.Interaction, message: str):
                                             (new_user_queries_available, interaction.user.id)
                             )
                     connection.commit()
-                await augur.invoke_llm(message, interaction)
+                await invoke_augur(message, interaction)
             elif previous_user_queries_available <= 0:
                 button = Button(style=ButtonStyle.red, sku_id=1279144574987796513)  
                 buttonview = discord.ui.View()
@@ -188,17 +201,5 @@ async def chat(interaction: discord.Interaction, message: str):
         await interaction.response.send_message(content="This command is only available with a premium subscription!", 
                                                 view=buttonview)
         return
-          
-    # print("invoking llm...")
-    # #await interaction.response.send_message(response)
-    # #invoking the llm takes too long at this point (beyond the 3 second slash command window)
-    # #need to defer and use followup instead.
-    # await interaction.response.defer()
-    # try:
-    #     await augur.invoke_llm(message, interaction)
-    #     # for i in chunkstring(response,2000):
-#     #      await interaction.followup.send(i)
-    # except:
-    #     await interaction.followup.send("The Augur isn't feeling well and an error has occured. Please try sending your message again")
 
 bot.run(TOKEN)
