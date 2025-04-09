@@ -10,8 +10,11 @@ from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.retrievers import EnsembleRetriever
-
-
+import os
+from dotenv import load_dotenv
+load_dotenv()
+CHROMA_URL = os.getenv('CHROMA_URL')
+CHROMA_PORT = os.getenv('CHROMA_PORT')
 class Augur:
 
     def __init__(self) -> None:
@@ -39,9 +42,10 @@ class Augur:
         #local chroma for testing
         #self.vectorstore = Chroma(collection_name="split_children", embedding_function=self.embeddings, persist_directory="./db")
         #chroma client for production
+        print(CHROMA_URL)
         chroma_client = chromadb.HttpClient(
-            host='localhost', 
-            port=8000
+            host=CHROMA_URL, 
+            port=CHROMA_PORT
         )
 
         self.vectorstore = Chroma(

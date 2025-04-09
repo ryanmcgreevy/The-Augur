@@ -80,6 +80,7 @@ def scrape_and_store(name,mode):
         child_splitter=child_splitter,
         #parent_splitter=parent_splitter,
     )
+
     def batch_process(documents_arr, batch_size, process_function):
         for i in range(0, len(documents_arr), batch_size):
             batch = documents_arr[i:i + batch_size]

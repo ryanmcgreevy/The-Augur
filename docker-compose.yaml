@@ -1,0 +1,36 @@
+
+services:
+  chromadb:
+    image: chromadb/chroma
+    restart: unless-stopped
+    volumes:
+      - ./db:/data
+    ports:
+      - 8000:8000
+    networks:
+      - botnet
+  theaugur:
+    build:
+      context: .
+    image: ghcr.io/ryanmcgreevy/augur:latest
+    restart: unless-stopped
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      DISCORD_TOKEN: ${DISCORD_TOKEN}
+      CHROMA_URL: chromadb
+      CHROMA_PORT: 8000
+    volumes:
+      - ./store_location:/app/store_location
+    depends_on:
+      chromadb:
+        condition: service_started
+    networks:
+      - botnet
+networks:
+  botnet:
+    driver: bridge
+volumes:
+  db:
+    external: true
+  store_location:
+    external: true
