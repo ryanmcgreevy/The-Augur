@@ -1,4 +1,5 @@
 from langchain_chroma import Chroma
+import chromadb
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.retrievers import ParentDocumentRetriever
@@ -29,34 +30,55 @@ class Augur:
         self.llm = ChatOpenAI(model="gpt-4o-mini")
         self.embeddings=OpenAIEmbeddings()
 
-        child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
-
         fs = LocalFileStore("./store_location")
         store = create_kv_docstore(fs)
         #not using parent splitters for now
         #parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
         child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
 
-        self.vectorstore = Chroma(collection_name="split_children", embedding_function=self.embeddings, persist_directory="./db")
-        self.retriever = ParentDocumentRetriever(
-        vectorstore=self.vectorstore,
-        docstore=store,
-        child_splitter=child_splitter,
-	    search_kwargs= {"k":6},
-        #search_type="mmr", 
-        #search_kwargs= {"lambda_mult":.5, "k":6},
-        #parent_splitter=parent_splitter,
+        #local chroma for testing
+        #self.vectorstore = Chroma(collection_name="split_children", embedding_function=self.embeddings, persist_directory="./db")
+        #chroma client for production
+        chroma_client = chromadb.HttpClient(
+            host='localhost', 
+            port=8000
         )
 
-        self.oldvectorstore = Chroma(persist_directory="./db", embedding_function=self.embeddings)
-        self.otherretriever = self.oldvectorstore.as_retriever(search_type="mmr", search_kwargs={"lambda_mult":.5, "k":6})
+        self.vectorstore = Chroma(
+            collection_name="split_children", 
+            embedding_function=self.embeddings, 
+            client=chroma_client
+        )
+
+        self.retriever = ParentDocumentRetriever(
+            vectorstore=self.vectorstore,
+            docstore=store,
+            child_splitter=child_splitter,
+	        search_kwargs= {"k":6},
+        )
+
+        #local chroma for testing
+        #self.oldvectorstore = Chroma(persist_directory="./db", embedding_function=self.embeddings)
+        #chroma client for production
+        self.oldvectorstore = Chroma(
+            client=chroma_client, 
+            embedding_function=self.embeddings
+        )
+        self.otherretriever = self.oldvectorstore.as_retriever(
+            search_type="mmr", 
+            search_kwargs={"lambda_mult":.5, "k":6}
+        )
 
         # # initialize the ensemble retriever
         self.ensemble_retriever = EnsembleRetriever(
-             retrievers=[self.retriever, self.otherretriever], weights=[0.5, 0.5]
+             retrievers=[self.retriever, self.otherretriever], 
+             weights=[0.5, 0.5]
          )
 
-        self.prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly member of the guild. Answer with as much specific detail as possible. Answer the following question based only on the provided context and use the specific wording of the context as much as possible:
+        self.prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly member of the guild.\
+            Answer with as much specific detail as possible. \
+            Answer the following question based only on the provided context. \
+            Use the specific wording of the context as much as possible:
 
         <context>
         {context}
