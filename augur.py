@@ -42,7 +42,6 @@ class Augur:
         #local chroma for testing
         #self.vectorstore = Chroma(collection_name="split_children", embedding_function=self.embeddings, persist_directory="./db")
         #chroma client for production
-        print(CHROMA_URL)
         chroma_client = chromadb.HttpClient(
             host=CHROMA_URL, 
             port=CHROMA_PORT
