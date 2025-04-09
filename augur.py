@@ -10,6 +10,9 @@ from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.retrievers import EnsembleRetriever
+# from langchain_community.retrievers import BM25Retriever
+# from langchain_community.document_loaders import DirectoryLoader
+# from langchain_community.document_loaders import TextLoader
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -35,6 +38,12 @@ class Augur:
 
         fs = LocalFileStore("./store_location")
         store = create_kv_docstore(fs)
+
+        # docs = []
+        # dloader = DirectoryLoader("./store_location", glob="**/*", use_multithreading=True, loader_cls=TextLoader)
+        # for tdoc in dloader.load(): docs.append(tdoc)
+        # bmretriever = BM25Retriever.from_documents(docs)
+
         #not using parent splitters for now
         #parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
         child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
