@@ -10,8 +10,6 @@ jobs :
     steps:
       - uses: actions/checkout@v4
       - name: build
-        run: | 
-          cd $GITHUB_WORKSPACE/The-Augur
-          docker compose build
+        run: docker compose build
       - name: deploy
         run: docker compose up -d
