@@ -1,0 +1,17 @@
+name: deploy
+
+on: 
+  push:
+  
+jobs :
+
+  build: 
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - name: build
+        run: | 
+          cd The-Augur
+          docker compose build
+      - name: deploy
+        run: docker compose up -d
