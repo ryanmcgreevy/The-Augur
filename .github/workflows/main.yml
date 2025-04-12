@@ -15,4 +15,7 @@ jobs :
           STORE_LOCATION: /mnt/ssd/store_location
         run: docker compose build
       - name: deploy
+        env:
+          DB: /mnt/ssd/db
+          STORE_LOCATION: /mnt/ssd/store_location
         run: docker compose up -d
