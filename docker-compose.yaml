@@ -4,7 +4,7 @@ services:
     image: chromadb/chroma
     restart: unless-stopped
     volumes:
-      - ./db:/data
+      - ${DB}:/data
     ports:
       - 8000:8000
     networks:
@@ -20,7 +20,7 @@ services:
       CHROMA_URL: chromadb
       CHROMA_PORT: 8000
     volumes:
-      - ./store_location:/app/store_location
+      - ${STORE_LOCATION}:/app/store_location
     depends_on:
       chromadb:
         condition: service_started
