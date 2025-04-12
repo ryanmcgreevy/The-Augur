@@ -11,6 +11,9 @@ jobs :
     steps:
       - uses: actions/checkout@v4
       - name: build
+        env:
+          DB: /mnt/ssd/db
+          STORE_LOCATION: /mnt/ssd/store_location
         run: docker compose build
       - name: deploy
         env:
