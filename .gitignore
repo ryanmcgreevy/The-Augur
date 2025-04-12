@@ -1,0 +1,7 @@
+Files/
+.env
+*-workspace*
+augur.db
+db/
+store_location/
+__pycache__/
