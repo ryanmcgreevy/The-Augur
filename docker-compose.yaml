@@ -12,7 +12,7 @@ services:
   theaugur:
     build:
       context: .
-    image: ghcr.io/ryanmcgreevy/augur:latest
+    #image: ghcr.io/ryanmcgreevy/augur:latest
     restart: unless-stopped
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
