@@ -26,6 +26,21 @@ services:
         condition: service_started
     networks:
       - botnet
+  crawler:
+    build:
+      context: ./utils/
+    restart: unless-stopped
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CHROMA_URL: chromadb
+      CHROMA_PORT: 8000
+    volumes:
+      - ${STORE_LOCATION}:/app/store_location
+    depends_on:
+      chromadb:
+        condition: service_started
+    networks:
+      - botnet
 networks:
   botnet:
     driver: bridge
