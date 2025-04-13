@@ -12,7 +12,7 @@ services:
   theaugur:
     build:
       context: .
-    #image: ghcr.io/ryanmcgreevy/augur:latest
+    image: ghcr.io/ryanmcgreevy/augur:latest
     restart: unless-stopped
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
@@ -29,6 +29,7 @@ services:
   crawler:
     build:
       context: ./utils/
+    image: ghcr.io/ryanmcgreevy/augur-crawler:latest
     restart: unless-stopped
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
@@ -36,6 +37,7 @@ services:
       CHROMA_PORT: 8000
     volumes:
       - ${STORE_LOCATION}:/app/store_location
+      - ${ESO_NEWS}:/app/eso_news
     depends_on:
       chromadb:
         condition: service_started
@@ -49,3 +51,6 @@ volumes:
     external: true
   store_location:
     external: true
+  eso_news:
+    external: true
+      
