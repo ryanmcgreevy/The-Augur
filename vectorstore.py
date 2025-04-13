@@ -1,10 +1,7 @@
 from langchain_chroma import Chroma
-from langchain_community.document_loaders import WebBaseLoader
+import chromadb
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-import getpass
-import os
 from os import walk
-from langchain_community.document_loaders import WebBaseLoader
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import DirectoryLoader
@@ -12,9 +9,12 @@ from langchain_community.document_loaders import TextLoader
 from langchain.storage._lc_store import create_kv_docstore
 from langchain.retrievers import ParentDocumentRetriever
 from langchain.storage.file_system import LocalFileStore
-from langchain_community.document_loaders import UnstructuredHTMLLoader
-from langchain_community.document_loaders import BSHTMLLoader
 import argparse
+import os
+from dotenv import load_dotenv
+load_dotenv()
+CHROMA_URL = os.getenv('CHROMA_URL')
+CHROMA_PORT = os.getenv('CHROMA_PORT')
 
 #from langchain_community.embeddings import OllamaEmbeddings
 #for offline llm
@@ -26,54 +26,43 @@ import argparse
 
 def scrape_and_store(name,mode):
     embeddings=OpenAIEmbeddings()
+
+    #local embeddings
     #from langchain_ollama import OllamaEmbeddings
     #embeddings = OllamaEmbeddings(model="mxbai-embed-large")
-    # loader = WebBaseLoader(["https://sites.google.com/view/mh-guilds/guides-and-stuff/rules-policies", 
-    #                     "https://sites.google.com/view/mh-guilds/welcome",
-    #                     "https://sites.google.com/view/mh-guilds/guides/trading",
-    #                     "https://sites.google.com/view/mh-guilds/guides/healer-role",
-    #                     "https://sites.google.com/view/mh-guilds/guides/tank-role",
-    #                     "https://sites.google.com/view/mh-guilds/guides/dps-role",
-    #                     "https://sites.google.com/view/mh-guilds/raffle",
-    #                     "https://sites.google.com/view/mh-guilds/trial-notes/aetherian-archive",
-    #                     "https://sites.google.com/view/mh-guilds/guides/scribing"])
-
-
-    # docs = loader.load()
 
     docs = []
 
     if mode == 'dir':
-        # dloader = DirectoryLoader(name, glob="**/*.txt", loader_cls=TextLoader, use_multithreading=True)
-        # for tdoc in dloader.load(): docs.append(tdoc)
-
-        # dloader = DirectoryLoader(name, glob="**/*.md", use_multithreading=True)
-        # for tdoc in dloader.load(): docs.append(tdoc)
-
-        # dloader = DirectoryLoader(name, glob="**/*.html", use_multithreading=True)
-        # for tdoc in dloader.load(): docs.append(tdoc)
-
         dloader = DirectoryLoader(name, glob="**/*", use_multithreading=True)
         for tdoc in dloader.load(): docs.append(tdoc)
     elif mode == 'file':
         loader = TextLoader(name)
-        #loader = BSHTMLLoader(name)
+
         docs = loader.load()
     print(len(docs))
-    #for doc in docs:
-        #print(doc.metadata)
-    #chunk_size = 1000
-    #chunk_overlap = 200
-    #text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-    #splits = text_splitter.split_documents(docs)
-    #vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, persist_directory="./db_extract")
-
+    
     fs = LocalFileStore("./store_location")
     store = create_kv_docstore(fs)
-    parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
+    #not splitting parents right now
+    #parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
     child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
+    
+    #local chroma for testing
+    #vectorstore = Chroma(collection_name="split_children", embedding_function=embeddings, persist_directory="./db")
+    
+    #chroma client for production
+    chroma_client = chromadb.HttpClient(
+        host=CHROMA_URL, 
+        port=CHROMA_PORT
+    )
 
-    vectorstore = Chroma(collection_name="split_children", embedding_function=embeddings, persist_directory="./db")
+    vectorstore = Chroma(
+        collection_name="split_children", 
+        embedding_function=embeddings, 
+        client=chroma_client
+    )
+
     retriever = ParentDocumentRetriever(
         vectorstore=vectorstore,
         docstore=store,
@@ -95,7 +84,6 @@ def scrape_and_store(name,mode):
     batch_size = 50
 
     batch_process(docs, batch_size, add_to_chroma_database)
-
 
     retriever.add_documents(docs, ids=None)
 
