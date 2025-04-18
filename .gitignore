@@ -6,4 +6,4 @@ db/
 store_location/
 __pycache__/
 eso_news/
-.vscode
+.vscode/
