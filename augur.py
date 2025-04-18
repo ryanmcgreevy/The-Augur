@@ -10,9 +10,9 @@ from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.retrievers import EnsembleRetriever
-# from langchain_community.retrievers import BM25Retriever
-# from langchain_community.document_loaders import DirectoryLoader
-# from langchain_community.document_loaders import TextLoader
+from langchain_community.retrievers import BM25Retriever
+from langchain_community.document_loaders import DirectoryLoader
+from langchain_community.document_loaders import TextLoader
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -39,10 +39,10 @@ class Augur:
         fs = LocalFileStore("./store_location")
         store = create_kv_docstore(fs)
 
-        # docs = []
-        # dloader = DirectoryLoader("./store_location", glob="**/*", use_multithreading=True, loader_cls=TextLoader)
-        # for tdoc in dloader.load(): docs.append(tdoc)
-        # bmretriever = BM25Retriever.from_documents(docs)
+        docs = []
+        dloader = DirectoryLoader("./store_location", glob="**/*", use_multithreading=True, loader_cls=TextLoader)
+        for tdoc in dloader.load(): docs.append(tdoc)
+        bmretriever = BM25Retriever.from_documents(docs)
 
         #not using parent splitters for now
         #parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
@@ -72,18 +72,20 @@ class Augur:
         #local chroma for testing
         #self.oldvectorstore = Chroma(persist_directory="./db", embedding_function=self.embeddings)
         #chroma client for production
-        self.oldvectorstore = Chroma(
-            client=chroma_client, 
-            embedding_function=self.embeddings
-        )
-        self.otherretriever = self.oldvectorstore.as_retriever(
-            search_type="mmr", 
-            search_kwargs={"lambda_mult":.5, "k":6}
-        )
+        # can't use vectorstore we made for parent doc retriever because the embedded text isnt stored, it points to 
+        # the docs. Not sure this works without making a separate "normal" vectorstore
+        # self.oldvectorstore = Chroma(
+        #     client=chroma_client, 
+        #     embedding_function=self.embeddings
+        # )
+        # self.otherretriever = self.oldvectorstore.as_retriever(
+        #     search_type="mmr", 
+        #     search_kwargs={"lambda_mult":.5, "k":6}
+        # )
 
         # # initialize the ensemble retriever
         self.ensemble_retriever = EnsembleRetriever(
-             retrievers=[self.retriever, self.otherretriever], 
+             retrievers=[self.retriever, bmretriever], 
              weights=[0.5, 0.5]
          )
 
