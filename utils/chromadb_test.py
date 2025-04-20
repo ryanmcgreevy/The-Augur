@@ -36,7 +36,9 @@ loader = TextLoader(name)
 docs = loader.load()
 id = str(hashlib.sha256(name.encode()).hexdigest())
 ids = [id]
-docs[0].metadata = {"id":id, "source":name}
+#docs[0].metadata = {"id":id}
+print(docs[0].metadata)
+
 #not splitting parents right now
 #parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
 #child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
@@ -53,7 +55,7 @@ vectorstore = Chroma(
 
 retriever = vectorstore.as_retriever()
 
-retriever.add_documents(documents=docs,ids=ids)
+vectorstore.add_documents(documents=docs,ids=ids)
 
 
 for collection_name in client.list_collections():
@@ -66,6 +68,7 @@ for collection_name in client.list_collections():
     metadata = data["metadatas"]
     documents = data["documents"]
 
-print(ids)
-print(metadata)
-print(documents)
+# print(ids)
+#print(metadata[0]["source"])
+# print(embeddings)
+# print(documents)
