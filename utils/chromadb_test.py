@@ -11,6 +11,7 @@ from langchain_community.document_loaders import TextLoader
 from langchain.storage._lc_store import create_kv_docstore
 from langchain.retrievers import ParentDocumentRetriever
 from langchain.storage.file_system import LocalFileStore
+import hashlib
 # from dotenv import load_dotenv
 # load_dotenv()
 # CHROMA_URL = os.getenv('CHROMA_URL')
@@ -33,7 +34,7 @@ docs = []
 name = "test.txt"
 loader = TextLoader(name)
 docs = loader.load()
-id = str(hash(name))
+id = str(hashlib.sha256(name.encode()).hexdigest())
 ids = [id]
 docs[0].metadata = {"id":id, "source":name}
 #not splitting parents right now
