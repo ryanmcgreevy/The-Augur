@@ -12,11 +12,17 @@ import sqlite3
 from contextlib import closing
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-
+SHARD_ID = int(os.getenv('SHARD_ID'))
+SHARD_COUNT = int(os.getenv('SHARD_COUNT'))
+# cluster_kwargs = {
+#     "shard_ids": [SHARD_ID],
+#     "shard_count": 1,
+# }
 #bot implementation
 intents = discord.Intents.all()
 intents.message_content = True
-bot = commands.Bot(command_prefix='!', intents=intents, owner_ids=[414265811713130496,301648851121471490])
+bot = commands.AutoShardedBot(command_prefix='!', intents=intents, owner_ids=[414265811713130496,301648851121471490],
+                              shard_count=SHARD_COUNT, shard_ids=[SHARD_ID])
 
 augur = Augur()
 

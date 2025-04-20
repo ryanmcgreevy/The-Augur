@@ -9,7 +9,8 @@ services:
       - 8000:8000
     networks:
       - botnet
-  theaugur:
+  theaugur-1:
+    container_name: 'theaugur-1'
     build:
       context: .
     image: ghcr.io/ryanmcgreevy/augur:latest
@@ -19,6 +20,8 @@ services:
       DISCORD_TOKEN: ${DISCORD_TOKEN}
       CHROMA_URL: chromadb
       CHROMA_PORT: 8000
+      SHARD_COUNT: 1
+      SHARD_ID: 0
     volumes:
       - ${STORE_LOCATION}:/app/store_location
     depends_on:
@@ -26,6 +29,12 @@ services:
         condition: service_started
     networks:
       - botnet
+  # theaugur-2:
+  #   container_name: 'theaugur-2'
+  #   environment:
+  #     SHARD_ID: 1
+  #   extends:
+  #     service: theaugur-1
   crawler:
     build:
       context: ./utils/
