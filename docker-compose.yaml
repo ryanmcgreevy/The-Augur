@@ -44,7 +44,6 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       CHROMA_URL: chromadb
       CHROMA_PORT: 8000
-      ESO_NEWS: ${ESO_NEWS}
     volumes:
       - ${STORE_LOCATION}:/app/store_location
       - ${ESO_NEWS}:/app/eso_news

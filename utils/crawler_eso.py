@@ -14,10 +14,6 @@ from crawl4ai.async_configs import BrowserConfig
 from crawl4ai.async_dispatcher import MemoryAdaptiveDispatcher
 from crawl4ai import RateLimiter
 import subprocess
-from dotenv import load_dotenv
-load_dotenv()
-ESO_NEWS = os.getenv('ESO_NEWS')
-
 
 async def main():
     # Create a chain of filters
@@ -84,7 +80,7 @@ async def main():
     
 
 def process_result(result):
-        local_dir = ESO_NEWS
+        local_dir = '/app/eso_news/'
         # Access individual results
         #for result in results:
         url = result.url
