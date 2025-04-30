@@ -9,9 +9,9 @@ jobs :
   build: 
     runs-on: self-hosted
     env:
-      DB: /mnt/ssd/db
-      STORE_LOCATION: /mnt/ssd/store_location
-      ESO_NEWS: /mnt/ssd/eso_news
+      DB: /root/db
+      STORE_LOCATION: /root/store_location
+      ESO_NEWS: /root/eso_news
     steps:
       - uses: actions/checkout@v4
       - name: build
