@@ -9,7 +9,7 @@ RUN --mount=type=cache,target=/root/.cache pip install -r requirements.txt
 RUN playwright install
 RUN playwright install-deps
 RUN apt-get update && apt-get install -y cron
-RUN echo "0   14,02   *   *   * python3 /app/crawler_eso.py >> /var/log/cron.log 2>&1" > /etc/cron.d/crawler
+RUN echo "0   15,03   *   *   * /usr/local/bin/python /app/crawler_eso.py >> /var/log/cron.log 2>&1" > /etc/cron.d/crawler
 # Give execution rights on the cron job
 RUN chmod 0644 /etc/cron.d/crawler
 # Apply cron job
