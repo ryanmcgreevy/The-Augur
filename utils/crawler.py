@@ -19,7 +19,7 @@ async def main():
     filter_chain = FilterChain([
         # Only follow URLs with specific patterns
         #URLPatternFilter(patterns=["*Online:*", "*Lore:*"]),
-        URLPatternFilter(patterns=["*Online:*"]),
+        URLPatternFilter(patterns=["*"]),
         # Only crawl specific domains
         #DomainFilter(
         #    allowed_domains=["docs.example.com"],
@@ -51,7 +51,7 @@ async def main():
     # Configure a 1-level deep crawl
     config = CrawlerRunConfig(
         deep_crawl_strategy=BFSDeepCrawlStrategy(
-            max_depth=3, 
+            max_depth=0, 
             include_external=False,
             filter_chain=filter_chain
         ),
@@ -65,14 +65,14 @@ async def main():
     )
 
     async with AsyncWebCrawler() as crawler:
-        async for result in await crawler.arun("https://en.uesp.net/wiki/Online:Sets", config=config, dispatcher=dispatcher):
+        async for result in await crawler.arun("https://alcasthq.com/eso-subclassing-guide/", config=config, dispatcher=dispatcher):
             process_result(result)
 
         #print(f"Crawled {len(results)} pages in total")
     
 
 def process_result(result):
-        local_dir = "uesp_output2/"
+        local_dir = "alcast/"
         # Access individual results
         #for result in results:
         url = result.url
