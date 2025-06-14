@@ -13,13 +13,14 @@ from crawl4ai.deep_crawling.filters import (
 from crawl4ai.async_configs import BrowserConfig
 from crawl4ai.async_dispatcher import MemoryAdaptiveDispatcher
 from crawl4ai import RateLimiter
+import argparse
 
-async def main():
+async def main(url, depth, filter, output):
     # Create a chain of filters
     filter_chain = FilterChain([
         # Only follow URLs with specific patterns
         #URLPatternFilter(patterns=["*Online:*", "*Lore:*"]),
-        URLPatternFilter(patterns=["*"]),
+        URLPatternFilter(patterns=[filter]),
         # Only crawl specific domains
         #DomainFilter(
         #    allowed_domains=["docs.example.com"],
@@ -34,8 +35,8 @@ async def main():
         check_interval=1.0,             # How often to check memory
         max_session_permit=10,          # Maximum concurrent tasks
         rate_limiter=RateLimiter(       # Optional rate limiting
-            base_delay=(5.0, 7.0),
-            max_delay=30.0,
+            base_delay=(10.0, 20.0),
+            max_delay=60.0,
             max_retries=2,
             rate_limit_codes=[429, 503]  # Handle these HTTP status codes
         )
@@ -51,7 +52,7 @@ async def main():
     # Configure a 1-level deep crawl
     config = CrawlerRunConfig(
         deep_crawl_strategy=BFSDeepCrawlStrategy(
-            max_depth=0, 
+            max_depth=depth, 
             include_external=False,
             filter_chain=filter_chain
         ),
@@ -65,14 +66,16 @@ async def main():
     )
 
     async with AsyncWebCrawler() as crawler:
-        async for result in await crawler.arun("https://alcasthq.com/eso-subclassing-guide/", config=config, dispatcher=dispatcher):
-            process_result(result)
+        async for result in await crawler.arun(url, config=config, dispatcher=dispatcher):
+            process_result(result, output)
 
         #print(f"Crawled {len(results)} pages in total")
     
 
-def process_result(result):
-        local_dir = "alcast/"
+def process_result(result, output):
+        local_dir = output
+        if not os.path.exists(local_dir):
+            os.makedirs(local_dir)
         # Access individual results
         #for result in results:
         url = result.url
@@ -85,9 +88,16 @@ def process_result(result):
                 filename = os.path.join( local_dir, url_name + '.md')
             else:
                 filename = os.path.join( local_dir, 'home' + '.md')
-            with open(filename, 'w') as f:
-                content = md_res.raw_markdown
-                if content != None:
-                    f.write(content)
+            if not os.path.exists(filename):
+                with open(filename, 'w') as f:
+                    content = md_res.raw_markdown
+                    if content != None:
+                        f.write(content)
 if __name__ == "__main__":
-    asyncio.run(main())
+    parser = argparse.ArgumentParser("crawler")
+    parser.add_argument("url", help="URL to crawl.", type=str)
+    parser.add_argument("depth", help="depth to crawl", type=int)
+    parser.add_argument("filter", help="list of string filters for saving pages", type=str)
+    parser.add_argument("output", help="path of output directory", type=str)
+    args = parser.parse_args()
+    asyncio.run(main(args.url,args.depth,args.filter,args.output))

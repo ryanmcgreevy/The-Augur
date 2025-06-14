@@ -1,14 +1,14 @@
 
 services:
-  chromadb:
-    image: chromadb/chroma:1.0.5
-    restart: unless-stopped
-    volumes:
-      - ${DB}:/data
-    ports:
-      - 8000:8000
-    networks:
-      - botnet
+  # chromadb:
+  #   image: chromadb/chroma:1.0.5
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ${DB}:/data
+  #   ports:
+  #     - 8000:8000
+  #   networks:
+  #     - botnet
   theaugur-1:
     container_name: 'theaugur-1'
     build:
@@ -23,10 +23,11 @@ services:
       SHARD_COUNT: 1
       SHARD_ID: 0
     volumes:
-      - ${STORE_LOCATION}:/app/store_location
-    depends_on:
-      chromadb:
-        condition: service_started
+      #- ${STORE_LOCATION}:/app/store_location
+      - ${CONTEXT_FILES}:/app/context_files
+    # depends_on:
+    #   chromadb:
+    #     condition: service_started
     networks:
       - botnet
   # theaugur-2:
@@ -45,11 +46,11 @@ services:
       CHROMA_URL: chromadb
       CHROMA_PORT: 8000
     volumes:
-      - ${STORE_LOCATION}:/app/store_location
-      - ${ESO_NEWS}:/app/eso_news
-    depends_on:
-      chromadb:
-        condition: service_started
+      #- ${STORE_LOCATION}:/app/store_location
+      - ${ESO_NEWS}:/app/context_files/eso_news
+    # depends_on:
+    #   chromadb:
+    #     condition: service_started
     networks:
       - botnet
 networks:

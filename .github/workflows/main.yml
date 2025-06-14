@@ -10,8 +10,9 @@ jobs :
     runs-on: self-hosted
     env:
       DB: /root/db
-      STORE_LOCATION: /root/store_location
-      ESO_NEWS: /root/eso_news
+      #STORE_LOCATION: /root/store_location
+      CONTEXT_FILES: /root/context_files
+      ESO_NEWS: /root/context_files/eso_news
     steps:
       - uses: actions/checkout@v4
       - name: build

@@ -12,8 +12,8 @@ import sqlite3
 from contextlib import closing
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-SHARD_ID = int(os.getenv('SHARD_ID'))
-SHARD_COUNT = int(os.getenv('SHARD_COUNT'))
+SHARD_ID = 0#int(os.getenv('SHARD_ID'))
+SHARD_COUNT = 1#int(os.getenv('SHARD_COUNT'))
 # cluster_kwargs = {
 #     "shard_ids": [SHARD_ID],
 #     "shard_count": 1,

@@ -34,40 +34,40 @@ class Augur:
         #os.environ["OPENAI_API_KEY"] = getpass.getpass()
 
         self.llm = ChatOpenAI(model="gpt-4o-mini")
-        self.embeddings=OpenAIEmbeddings()
+        #self.embeddings=OpenAIEmbeddings()
 
-        fs = LocalFileStore("./store_location")
-        store = create_kv_docstore(fs)
+        # fs = LocalFileStore("./store_location")
+        # store = create_kv_docstore(fs)
 
         docs = []
-        dloader = DirectoryLoader("./store_location", glob="**/*", use_multithreading=True, loader_cls=TextLoader)
+        dloader = DirectoryLoader("./context_files", glob="**/*", use_multithreading=True, loader_cls=TextLoader)
         for tdoc in dloader.load(): docs.append(tdoc)
         bmretriever = BM25Retriever.from_documents(docs)
 
         #not using parent splitters for now
         #parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)
-        child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
+        #child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
 
         #local chroma for testing
         #self.vectorstore = Chroma(collection_name="split_children", embedding_function=self.embeddings, persist_directory="./db")
         #chroma client for production
-        chroma_client = chromadb.HttpClient(
-            host=CHROMA_URL, 
-            port=CHROMA_PORT
-        )
+        # chroma_client = chromadb.HttpClient(
+        #     host=CHROMA_URL, 
+        #     port=CHROMA_PORT
+        # )
 
-        self.vectorstore = Chroma(
-            collection_name="split_children", 
-            embedding_function=self.embeddings, 
-            client=chroma_client
-        )
+        # self.vectorstore = Chroma(
+        #     collection_name="split_children", 
+        #     embedding_function=self.embeddings, 
+        #     client=chroma_client
+        # )
 
-        self.retriever = ParentDocumentRetriever(
-            vectorstore=self.vectorstore,
-            docstore=store,
-            child_splitter=child_splitter,
-	        search_kwargs= {"k":6},
-        )
+        # self.retriever = ParentDocumentRetriever(
+        #     vectorstore=self.vectorstore,
+        #     docstore=store,
+        #     child_splitter=child_splitter,
+	    #     search_kwargs= {"k":6},
+        # )
 
         #local chroma for testing
         #self.oldvectorstore = Chroma(persist_directory="./db", embedding_function=self.embeddings)
@@ -84,10 +84,10 @@ class Augur:
         # )
 
         # # initialize the ensemble retriever
-        self.ensemble_retriever = EnsembleRetriever(
-             retrievers=[self.retriever, bmretriever], 
-             weights=[0.5, 0.5]
-         )
+        # self.ensemble_retriever = EnsembleRetriever(
+        #      retrievers=[self.retriever, bmretriever], 
+        #      weights=[0.5, 0.5]
+        #  )
 
         self.prompt = ChatPromptTemplate.from_template("""Answer as if you are a friendly member of the guild.\
             Answer with as much specific detail as possible. \
@@ -101,7 +101,7 @@ class Augur:
         Question: {input}""")
 
         document_chain = create_stuff_documents_chain(self.llm, self.prompt)
-        self.retrieval_chain = create_retrieval_chain(self.ensemble_retriever, document_chain)
+        self.retrieval_chain = create_retrieval_chain(bmretriever, document_chain)
         
     async def invoke_llm(self, user_input):
         print("invoking llm...")

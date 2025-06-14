@@ -80,7 +80,7 @@ async def main():
     
 
 def process_result(result):
-        local_dir = '/app/eso_news/'
+        local_dir = '/app/context_files/eso_news/'
         # Access individual results
         #for result in results:
         url = result.url
@@ -101,6 +101,6 @@ def process_result(result):
                         f.close()
                 #cwd = os.getcwd()
                 #filename = os.path.join(cwd, filename)
-                subprocess.run(['python3', 'vectorstore.py', filename, "file"])
+                #subprocess.run(['python3', 'vectorstore.py', filename, "file"])
 if __name__ == "__main__":
     asyncio.run(main())
