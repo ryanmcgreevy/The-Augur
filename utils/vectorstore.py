@@ -6,6 +6,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import DirectoryLoader
 from langchain_community.document_loaders import TextLoader
+from langchain_community.document_loaders import UnstructuredMarkdownLoader
 from langchain.storage._lc_store import create_kv_docstore
 from langchain.retrievers import ParentDocumentRetriever
 from langchain.storage.file_system import LocalFileStore
@@ -34,13 +35,21 @@ def scrape_and_store(name,mode):
     docs = []
 
     if mode == 'dir':
-        dloader = DirectoryLoader(name, glob="**/*", use_multithreading=True)
+        dloader = DirectoryLoader(name, glob="**/*", use_multithreading=True, show_progress=True)
         for tdoc in dloader.load(): docs.append(tdoc)
     elif mode == 'file':
-        loader = TextLoader(name)
+        loader = UnstructuredMarkdownLoader(name)
 
         docs = loader.load()
     print(len(docs))
+
+    #The following is useful if you want to strip the markdown from the input documents but not run embedding/vectorization
+    # for doc in docs:
+    #     filename = doc.metadata['source']
+    #     print(filename)
+    #     content = doc.page_content
+    #     with open(filename, 'w') as f:
+    #         f.write(content)
     
     fs = LocalFileStore("./store_location")
     store = create_kv_docstore(fs)
