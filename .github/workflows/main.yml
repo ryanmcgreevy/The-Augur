@@ -33,6 +33,9 @@ jobs :
 
       # Increase or decrease based on the available host memory (in bytes)
       MEM_LIMIT: 1073741824
+      CERTS: /root/certs
+      ESDATA01: /root/esdata01
+      KIBANADATA: /root/kibanadata
     steps:
       - uses: actions/checkout@v4
       - name: build
