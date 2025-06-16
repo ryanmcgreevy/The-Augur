@@ -1,11 +1,10 @@
+version: "2.2"
 
-#THE FOLLOWING IS FOR A GENERIC 3 NODE ELASTIC CLUSTER FOR REFERENCE
-#USES DOCKER VOLUMES INSTEAD OF BIND MOUNTS LIKE THE AUGUR CURRENTLY USES FOR EASE OF DATA TRANSFER
 services:
   setup:
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:
-      - ${CERTS}:/usr/share/elasticsearch/config/certs
+      - certs:/usr/share/elasticsearch/config/certs
     user: "0"
     command: >
       bash -c '
@@ -69,14 +68,15 @@ services:
         condition: service_healthy
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:
-      - ${CERTS}:/usr/share/elasticsearch/config/certs
-      - ${ESDATA01}:/usr/share/elasticsearch/data
+      - certs:/usr/share/elasticsearch/config/certs
+      - esdata01:/usr/share/elasticsearch/data
     ports:
       - ${ES_PORT}:9200
     environment:
       - node.name=es01
       - cluster.name=${CLUSTER_NAME}
-      - cluster.initial_master_nodes=es01
+      - cluster.initial_master_nodes=es01,es02,es03
+      - discovery.seed_hosts=es02,es03
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - bootstrap.memory_lock=true
       - xpack.security.enabled=true
@@ -106,14 +106,100 @@ services:
       timeout: 10s
       retries: 120
 
+  es02:
+    depends_on:
+      - es01
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+      - esdata02:/usr/share/elasticsearch/data
+    environment:
+      - node.name=es02
+      - cluster.name=${CLUSTER_NAME}
+      - cluster.initial_master_nodes=es01,es02,es03
+      - discovery.seed_hosts=es01,es03
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/es02/es02.key
+      - xpack.security.http.ssl.certificate=certs/es02/es02.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/es02/es02.key
+      - xpack.security.transport.ssl.certificate=certs/es02/es02.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.license.self_generated.type=${LICENSE}
+      - xpack.ml.use_auto_machine_memory_percent=true
+    mem_limit: ${MEM_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  es03:
+    depends_on:
+      - es02
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+      - esdata03:/usr/share/elasticsearch/data
+    environment:
+      - node.name=es03
+      - cluster.name=${CLUSTER_NAME}
+      - cluster.initial_master_nodes=es01,es02,es03
+      - discovery.seed_hosts=es01,es02
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/es03/es03.key
+      - xpack.security.http.ssl.certificate=certs/es03/es03.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/es03/es03.key
+      - xpack.security.transport.ssl.certificate=certs/es03/es03.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.license.self_generated.type=${LICENSE}
+      - xpack.ml.use_auto_machine_memory_percent=true
+    mem_limit: ${MEM_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
   kibana:
     depends_on:
       es01:
         condition: service_healthy
+      es02:
+        condition: service_healthy
+      es03:
+        condition: service_healthy
     image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
     volumes:
-      - ${CERTS}:/usr/share/kibana/config/certs
-      - ${KIBANADATA}:/usr/share/kibana/data
+      - certs:/usr/share/kibana/config/certs
+      - kibanadata:/usr/share/kibana/data
     ports:
       - ${KIBANA_PORT}:5601
     environment:
@@ -133,77 +219,14 @@ services:
       timeout: 10s
       retries: 120
 
-  # chromadb:
-  #   image: chromadb/chroma:1.0.5
-  #   restart: unless-stopped
-  #   volumes:
-  #     - ${DB}:/data
-  #   ports:
-  #     - 8000:8000
-  #   networks:
-  #     - botnet
-  theaugur-1:
-    container_name: 'theaugur-1'
-    build:
-      context: .
-    image: ghcr.io/ryanmcgreevy/augur:latest
-    restart: unless-stopped
-    environment:
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      DISCORD_TOKEN: ${DISCORD_TOKEN}
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
-      CHROMA_URL: chromadb
-      CHROMA_PORT: 8000
-      SHARD_COUNT: 1
-      SHARD_ID: 0
-    volumes:
-      - ${STORE_LOCATION}:/app/store_location
-      #- ${CONTEXT_FILES}:/app/context_files
-    depends_on:
-      # chromadb:
-      #   condition: service_started
-        es01:
-          condition: service_healthy
-    network_mode: host
-    # networks:
-    #   - botnet
-  # theaugur-2:
-  #   container_name: 'theaugur-2'
-  #   environment:
-  #     SHARD_ID: 1
-  #   extends:
-  #     service: theaugur-1
-#   crawler:
-#     build:
-#       context: ./utils/
-#     image: ghcr.io/ryanmcgreevy/augur-crawler:latest
-#     restart: unless-stopped
-#     environment:
-#       OPENAI_API_KEY: ${OPENAI_API_KEY}
-#       CHROMA_URL: chromadb
-#       CHROMA_PORT: 8000
-#     volumes:
-#       - ${STORE_LOCATION}:/app/store_location
-#       - ${ESO_NEWS}:/app/eso_news
-#     depends_on:
-#       chromadb:
-#         condition: service_started
-#     networks:
-#       - botnet
-# networks:
-#   botnet:
-#     driver: bridge
 volumes:
-  db:
-    external: true
-  store_location:
-    external: true
-  eso_news:
-    external: true
   certs:
-    external: true
+    driver: local
   esdata01:
-    external: true
+    driver: local
+  esdata02:
+    driver: local
+  esdata03:
+    driver: local
   kibanadata:
-    external: true
-      
+    driver: local
