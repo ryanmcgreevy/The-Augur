@@ -21,6 +21,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 CHROMA_URL = os.getenv('CHROMA_URL')
+ELASTIC_URL = os.getenv('ELASTIC_URL')
 CHROMA_PORT = os.getenv('CHROMA_PORT')
 ELASTIC_PASSWORD = os.getenv('ELASTIC_PASSWORD')
 class Augur:
@@ -77,14 +78,14 @@ class Augur:
         # Fingerprint from Elasticsearch
         # Colons and uppercase/lowercase don't matter when using
         # the 'ssl_assert_fingerprint' parameter
-        command = "openssl s_client -connect localhost:9200 -servername localhost -showcerts </dev/null 2>/dev/null \
+        command = "openssl s_client -connect "+ELASTIC_URL+":9200 -servername localhost -showcerts </dev/null 2>/dev/null \
                   | openssl x509 -fingerprint -sha256 -noout -in /dev/stdin"
         result = subprocess.check_output(command, shell=True, text=True)
         #get just the fingerprint from the output by splitting it on = and stripping ending newline
         CERT_FINGERPRINT = result.split("=")[1].strip()
 
         client = Elasticsearch(
-            "https://localhost:9200",
+            "https://"+ELASTIC_URL+":9200",
             ssl_assert_fingerprint=CERT_FINGERPRINT,
             basic_auth=("elastic", ELASTIC_PASSWORD)
         )

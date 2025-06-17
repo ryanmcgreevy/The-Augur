@@ -82,6 +82,7 @@ services:
       - xpack.security.transport.ssl.verification_mode=certificate
       - xpack.license.self_generated.type=${LICENSE}
       - xpack.ml.use_auto_machine_memory_percent=true
+      - network.host 0.0.0.0
     mem_limit: ${MEM_LIMIT}
     ulimits:
       memlock:
@@ -143,6 +144,7 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       DISCORD_TOKEN: ${DISCORD_TOKEN}
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      ELASTIC_URL: es01
       CHROMA_URL: chromadb
       CHROMA_PORT: 8000
       SHARD_COUNT: 1
@@ -155,7 +157,7 @@ services:
       #   condition: service_started
         es01:
           condition: service_healthy
-    network_mode: host
+    #network_mode: host
     # networks:
     #   - botnet
   # theaugur-2:
@@ -171,6 +173,7 @@ services:
     restart: unless-stopped
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ELASTIC_URL: es01
       CHROMA_URL: chromadb
       CHROMA_PORT: 8000
     volumes:
@@ -181,7 +184,7 @@ services:
         condition: service_healthy
       # chromadb:
       #   condition: service_started
-    network_mode: host
+    #network_mode: host
 #     networks:
 #       - botnet
 # networks:
