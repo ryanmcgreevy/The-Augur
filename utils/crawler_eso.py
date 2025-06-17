@@ -101,6 +101,7 @@ def process_result(result):
                         f.close()
                 #cwd = os.getcwd()
                 #filename = os.path.join(cwd, filename)
-                subprocess.run(['python3', 'vectorstore.py', filename, "file"])
+                #subprocess.run(['python3', 'vectorstore.py', filename, "file"])
+                subprocess.run(['python3', 'elastic.py', filename, "file"])
 if __name__ == "__main__":
     asyncio.run(main())

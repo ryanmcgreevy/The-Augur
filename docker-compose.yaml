@@ -173,21 +173,24 @@ services:
   #     SHARD_ID: 1
   #   extends:
   #     service: theaugur-1
-#   crawler:
-#     build:
-#       context: ./utils/
-#     image: ghcr.io/ryanmcgreevy/augur-crawler:latest
-#     restart: unless-stopped
-#     environment:
-#       OPENAI_API_KEY: ${OPENAI_API_KEY}
-#       CHROMA_URL: chromadb
-#       CHROMA_PORT: 8000
-#     volumes:
-#       - ${STORE_LOCATION}:/app/store_location
-#       - ${ESO_NEWS}:/app/eso_news
-#     depends_on:
-#       chromadb:
-#         condition: service_started
+  crawler:
+    build:
+      context: ./utils/
+    image: ghcr.io/ryanmcgreevy/augur-crawler:latest
+    restart: unless-stopped
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CHROMA_URL: chromadb
+      CHROMA_PORT: 8000
+    volumes:
+      - ${STORE_LOCATION}:/app/store_location
+      - ${ESO_NEWS}:/app/eso_news
+    depends_on:
+      es01:
+        condition: service_healthy
+      # chromadb:
+      #   condition: service_started
+    network_mode: host
 #     networks:
 #       - botnet
 # networks:

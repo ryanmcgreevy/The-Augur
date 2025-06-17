@@ -7,6 +7,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import DirectoryLoader
 from langchain_community.document_loaders import TextLoader
 from langchain_community.document_loaders import UnstructuredMarkdownLoader
+from langchain_community.document_loaders import UnstructuredFileLoader
 from langchain.storage._lc_store import create_kv_docstore
 from langchain.retrievers import ParentDocumentRetriever
 from langchain.storage.file_system import LocalFileStore
@@ -38,8 +39,7 @@ def scrape_and_store(name,mode):
         dloader = DirectoryLoader(name, glob="**/*", use_multithreading=True, show_progress=True)
         for tdoc in dloader.load(): docs.append(tdoc)
     elif mode == 'file':
-        loader = UnstructuredMarkdownLoader(name)
-
+        loader = UnstructuredFileLoader(name)
         docs = loader.load()
     print(len(docs))
 

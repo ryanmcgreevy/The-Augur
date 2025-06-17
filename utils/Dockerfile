@@ -16,7 +16,7 @@ RUN chmod 0644 /etc/cron.d/crawler
 RUN crontab /etc/cron.d/crawler
 # Create the log file to be able to run tail
 RUN touch /var/log/cron.log
-#COPY vectorstore.py /app
+COPY elastic/elastic.py /app
 COPY crawler_eso.py /app
 # Run the command on container startup
 CMD cron && tail -f /var/log/cron.log
