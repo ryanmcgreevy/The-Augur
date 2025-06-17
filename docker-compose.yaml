@@ -6,7 +6,10 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:
       - ${CERTS}:/usr/share/elasticsearch/config/certs
-    user: "0"
+    user: "0"    
+    environment:
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - KIBANA_PASSWORD=${KIBANA_PASSWORD}
     command: >
       bash -c '
         if [ x${ELASTIC_PASSWORD} == x ]; then
