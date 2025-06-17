@@ -16,6 +16,9 @@ jobs :
       # Version of Elastic products
       STACK_VERSION: 9.0.0
 
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      KIBANA_PASSWORD: ${KIBANA_PASSWORD}
+      
       # Set the cluster name
       CLUSTER_NAME: docker-cluster
 
