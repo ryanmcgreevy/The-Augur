@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 FROM python:3
 RUN mkdir /app
-RUN mkdir /app/eso_news
+#RUN mkdir /app/eso_news
 WORKDIR /app
 COPY requirements.txt /app/
 RUN --mount=type=cache,target=/root/.cache pip install --upgrade pip
