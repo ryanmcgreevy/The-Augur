@@ -3,6 +3,7 @@ name: deploy
 on: 
   push:
     branches: [ main ]
+  workflow_dispatch: 
   
 jobs :
 
@@ -16,7 +17,7 @@ jobs :
       # Version of Elastic products
       STACK_VERSION: 9.0.0
 
-      
+
       #set passwords from host environment variables
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       KIBANA_PASSWORD: ${KIBANA_PASSWORD}
