@@ -7,3 +7,6 @@ store_location/
 __pycache__/
 eso_news/
 .vscode/
+certs/
+esdata01/
+kibanadata/
