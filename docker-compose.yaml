@@ -117,7 +117,7 @@ services:
       - ELASTICSEARCH_USERNAME=kibana_system
       - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
       - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
-      - server.host=0.0.0.0 
+      - server.host=0.0.0.0
     mem_limit: ${MEM_LIMIT}
     healthcheck:
       test:
