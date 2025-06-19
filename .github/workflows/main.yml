@@ -10,10 +10,10 @@ jobs :
   build: 
     runs-on: self-hosted
     env:
-      DB: /root/db
-      STORE_LOCATION: /root/store_location
+      DB: /home/augur/db
+      STORE_LOCATION: /home/augur/store_location
       #CONTEXT_FILES: /root/context_files
-      ESO_NEWS: /root/eso_news
+      ESO_NEWS: /home/augur/eso_news
       # Version of Elastic products
       STACK_VERSION: 9.0.0
 
@@ -39,9 +39,9 @@ jobs :
 
       # Increase or decrease based on the available host memory (in bytes)
       MEM_LIMIT: 1073741824
-      CERTS: /root/certs
-      ESDATA01: /root/esdata01
-      KIBANADATA: /root/kibanadata
+      CERTS: /home/augur/certs
+      ESDATA01: /home/augur/esdata01
+      KIBANADATA: /home/augur/kibanadata
     steps:
       - uses: actions/checkout@v4
       - name: build
