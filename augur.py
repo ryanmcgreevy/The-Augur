@@ -39,7 +39,7 @@ class Augur:
         #For now, we are using the environment variable set by our bash profile
         #os.environ["OPENAI_API_KEY"] = getpass.getpass()
 
-        self.llm = ChatOpenAI(model="gpt-4o-mini")
+        self.llm = ChatOpenAI(model="gpt-5-mini")
         self.embeddings=OpenAIEmbeddings()
 
         # fs = LocalFileStore("./store_location")
